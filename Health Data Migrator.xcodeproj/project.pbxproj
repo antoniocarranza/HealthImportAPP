@@ -8,24 +8,38 @@
 
 /* Begin PBXBuildFile section */
 		A94004331BBEA34100055881 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94004321BBEA34100055881 /* AppDelegate.swift */; };
-		A94004361BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A94004341BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld */; };
-		A94004381BBEA34100055881 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94004371BBEA34100055881 /* MasterViewController.swift */; };
-		A940043A1BBEA34100055881 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94004391BBEA34100055881 /* DetailViewController.swift */; };
-		A940043D1BBEA34200055881 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A940043B1BBEA34200055881 /* Main.storyboard */; };
-		A940043F1BBEA34200055881 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A940043E1BBEA34200055881 /* Assets.xcassets */; };
 		A94004421BBEA34200055881 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A94004401BBEA34200055881 /* LaunchScreen.storyboard */; };
+		A940044C1BBEA7EA00055881 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A940044B1BBEA7EA00055881 /* Assets.xcassets */; settings = {ASSET_TAGS = (); }; };
+		A940045B1BBEB4F000055881 /* Health_Data_Migrator.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A94004591BBEB4F000055881 /* Health_Data_Migrator.xcdatamodeld */; settings = {ASSET_TAGS = (); }; };
+		A94004601BBEB5D800055881 /* BackupFile+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = A940045C1BBEB5D800055881 /* BackupFile+CoreDataProperties.swift */; settings = {ASSET_TAGS = (); }; };
+		A94004611BBEB5D800055881 /* BackupFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A940045D1BBEB5D800055881 /* BackupFile.swift */; settings = {ASSET_TAGS = (); }; };
+		A94004621BBEB5D800055881 /* QuantitySample+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = A940045E1BBEB5D800055881 /* QuantitySample+CoreDataProperties.swift */; settings = {ASSET_TAGS = (); }; };
+		A94004631BBEB5D800055881 /* QuantitySample.swift in Sources */ = {isa = PBXBuildFile; fileRef = A940045F1BBEB5D800055881 /* QuantitySample.swift */; settings = {ASSET_TAGS = (); }; };
+		A94004661BBEB60D00055881 /* XMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94004651BBEB60D00055881 /* XMLParser.swift */; settings = {ASSET_TAGS = (); }; };
+		A940046D1BBECC5E00055881 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A940046B1BBECC5E00055881 /* MasterViewController.swift */; settings = {ASSET_TAGS = (); }; };
+		A940046E1BBECC5E00055881 /* DetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A940046C1BBECC5E00055881 /* DetailTableViewController.swift */; settings = {ASSET_TAGS = (); }; };
+		A94004701BBECD6400055881 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A940046F1BBECD6400055881 /* Main.storyboard */; settings = {ASSET_TAGS = (); }; };
+		A94004731BBEF5F800055881 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A94004721BBEF5F800055881 /* HealthKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A940042F1BBEA34100055881 /* Health Data Migrator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Health Data Migrator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A94004321BBEA34100055881 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		A94004351BBEA34100055881 /* Health_Data_Migrator.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Health_Data_Migrator.xcdatamodel; sourceTree = "<group>"; };
-		A94004371BBEA34100055881 /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
-		A94004391BBEA34100055881 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
-		A940043C1BBEA34200055881 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		A940043E1BBEA34200055881 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A94004411BBEA34200055881 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A94004431BBEA34200055881 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A940044B1BBEA7EA00055881 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A940045A1BBEB4F000055881 /* Health_Data_Migrator.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Health_Data_Migrator.xcdatamodel; sourceTree = "<group>"; };
+		A940045C1BBEB5D800055881 /* BackupFile+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BackupFile+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		A940045D1BBEB5D800055881 /* BackupFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackupFile.swift; sourceTree = "<group>"; };
+		A940045E1BBEB5D800055881 /* QuantitySample+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "QuantitySample+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		A940045F1BBEB5D800055881 /* QuantitySample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QuantitySample.swift; sourceTree = "<group>"; };
+		A94004651BBEB60D00055881 /* XMLParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XMLParser.swift; sourceTree = "<group>"; };
+		A940046B1BBECC5E00055881 /* MasterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
+		A940046C1BBECC5E00055881 /* DetailTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailTableViewController.swift; sourceTree = "<group>"; };
+		A940046F1BBECD6400055881 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		A94004711BBEE10B00055881 /* Health_Data_Migrator 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Health_Data_Migrator 2.xcdatamodel"; sourceTree = "<group>"; };
+		A94004721BBEF5F800055881 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
+		A94004741BBEF5F800055881 /* Health Data Migrator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Health Data Migrator.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A94004731BBEF5F800055881 /* HealthKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +57,7 @@
 		A94004261BBEA34000055881 = {
 			isa = PBXGroup;
 			children = (
+				A94004721BBEF5F800055881 /* HealthKit.framework */,
 				A94004311BBEA34100055881 /* Health Data Migrator */,
 				A94004301BBEA34100055881 /* Products */,
 			);
@@ -58,16 +74,30 @@
 		A94004311BBEA34100055881 /* Health Data Migrator */ = {
 			isa = PBXGroup;
 			children = (
+				A94004741BBEF5F800055881 /* Health Data Migrator.entitlements */,
+				A94004641BBEB5DF00055881 /* Model */,
 				A94004321BBEA34100055881 /* AppDelegate.swift */,
-				A94004371BBEA34100055881 /* MasterViewController.swift */,
-				A94004391BBEA34100055881 /* DetailViewController.swift */,
-				A940043B1BBEA34200055881 /* Main.storyboard */,
-				A940043E1BBEA34200055881 /* Assets.xcassets */,
+				A940046B1BBECC5E00055881 /* MasterViewController.swift */,
+				A940046C1BBECC5E00055881 /* DetailTableViewController.swift */,
+				A94004651BBEB60D00055881 /* XMLParser.swift */,
+				A940046F1BBECD6400055881 /* Main.storyboard */,
+				A94004591BBEB4F000055881 /* Health_Data_Migrator.xcdatamodeld */,
+				A940044B1BBEA7EA00055881 /* Assets.xcassets */,
 				A94004401BBEA34200055881 /* LaunchScreen.storyboard */,
 				A94004431BBEA34200055881 /* Info.plist */,
-				A94004341BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld */,
 			);
 			path = "Health Data Migrator";
+			sourceTree = "<group>";
+		};
+		A94004641BBEB5DF00055881 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A940045C1BBEB5D800055881 /* BackupFile+CoreDataProperties.swift */,
+				A940045D1BBEB5D800055881 /* BackupFile.swift */,
+				A940045E1BBEB5D800055881 /* QuantitySample+CoreDataProperties.swift */,
+				A940045F1BBEB5D800055881 /* QuantitySample.swift */,
+			);
+			name = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,6 +132,11 @@
 					A940042E1BBEA34100055881 = {
 						CreatedOnToolsVersion = 7.0;
 						DevelopmentTeam = 9994XRWSP6;
+						SystemCapabilities = {
+							com.apple.HealthKit = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -128,9 +163,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A94004701BBECD6400055881 /* Main.storyboard in Resources */,
 				A94004421BBEA34200055881 /* LaunchScreen.storyboard in Resources */,
-				A940043F1BBEA34200055881 /* Assets.xcassets in Resources */,
-				A940043D1BBEA34200055881 /* Main.storyboard in Resources */,
+				A940044C1BBEA7EA00055881 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,24 +176,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A94004361BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld in Sources */,
+				A940046D1BBECC5E00055881 /* MasterViewController.swift in Sources */,
+				A94004631BBEB5D800055881 /* QuantitySample.swift in Sources */,
+				A940045B1BBEB4F000055881 /* Health_Data_Migrator.xcdatamodeld in Sources */,
+				A940046E1BBECC5E00055881 /* DetailTableViewController.swift in Sources */,
+				A94004661BBEB60D00055881 /* XMLParser.swift in Sources */,
+				A94004611BBEB5D800055881 /* BackupFile.swift in Sources */,
 				A94004331BBEA34100055881 /* AppDelegate.swift in Sources */,
-				A94004381BBEA34100055881 /* MasterViewController.swift in Sources */,
-				A940043A1BBEA34100055881 /* DetailViewController.swift in Sources */,
+				A94004621BBEB5D800055881 /* QuantitySample+CoreDataProperties.swift in Sources */,
+				A94004601BBEB5D800055881 /* BackupFile+CoreDataProperties.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		A940043B1BBEA34200055881 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				A940043C1BBEA34200055881 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		A94004401BBEA34200055881 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -257,10 +289,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Health Data Migrator/Health Data Migrator.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = "Health Data Migrator/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "es.365d.Health-Data-Migrator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -268,10 +304,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Health Data Migrator/Health Data Migrator.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = "Health Data Migrator/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "es.365d.Health-Data-Migrator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
@@ -294,16 +334,18 @@
 				A94004481BBEA34200055881 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		A94004341BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld */ = {
+		A94004591BBEB4F000055881 /* Health_Data_Migrator.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				A94004351BBEA34100055881 /* Health_Data_Migrator.xcdatamodel */,
+				A94004711BBEE10B00055881 /* Health_Data_Migrator 2.xcdatamodel */,
+				A940045A1BBEB4F000055881 /* Health_Data_Migrator.xcdatamodel */,
 			);
-			currentVersion = A94004351BBEA34100055881 /* Health_Data_Migrator.xcdatamodel */;
+			currentVersion = A94004711BBEE10B00055881 /* Health_Data_Migrator 2.xcdatamodel */;
 			path = Health_Data_Migrator.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

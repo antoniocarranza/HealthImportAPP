@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model name="Test1.xcdatamodel" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
-    <entity name="Event">
-        <attribute name="timeStamp" optional="YES" attributeType="Date"/>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="8195" systemVersion="15A284" minimumToolsVersion="Automatic">
+    <entity name="BackupFile" representedClassName=".BackupFile">
+        <attribute name="exportDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="fileName" optional="YES" attributeType="String">
+            <userInfo/>
+        </attribute>
+        <attribute name="fileURLWithPath" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lastImportDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <relationship name="quantitySamples" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="QuantitySample" inverseName="backupFile" inverseEntity="QuantitySample" syncable="YES"/>
+        <userInfo/>
+    </entity>
+    <entity name="QuantitySample" representedClassName=".QuantitySample" syncable="YES">
+        <attribute name="endDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="quantity" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="quantityType" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="startDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <relationship name="backupFile" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="BackupFile" inverseName="quantitySamples" inverseEntity="BackupFile" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Event" positionX="261" positionY="189" width="128" height="60"/>
+        <element name="BackupFile" positionX="333" positionY="-163" width="128" height="118"/>
+        <element name="QuantitySample" positionX="603" positionY="-178" width="128" height="133"/>
     </elements>
 </model>
