@@ -1,0 +1,314 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A94004331BBEA34100055881 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94004321BBEA34100055881 /* AppDelegate.swift */; };
+		A94004361BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A94004341BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld */; };
+		A94004381BBEA34100055881 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94004371BBEA34100055881 /* MasterViewController.swift */; };
+		A940043A1BBEA34100055881 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94004391BBEA34100055881 /* DetailViewController.swift */; };
+		A940043D1BBEA34200055881 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A940043B1BBEA34200055881 /* Main.storyboard */; };
+		A940043F1BBEA34200055881 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A940043E1BBEA34200055881 /* Assets.xcassets */; };
+		A94004421BBEA34200055881 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A94004401BBEA34200055881 /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A940042F1BBEA34100055881 /* Health Data Migrator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Health Data Migrator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A94004321BBEA34100055881 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A94004351BBEA34100055881 /* Health_Data_Migrator.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Health_Data_Migrator.xcdatamodel; sourceTree = "<group>"; };
+		A94004371BBEA34100055881 /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
+		A94004391BBEA34100055881 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		A940043C1BBEA34200055881 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		A940043E1BBEA34200055881 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A94004411BBEA34200055881 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A94004431BBEA34200055881 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A940042C1BBEA34100055881 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A94004261BBEA34000055881 = {
+			isa = PBXGroup;
+			children = (
+				A94004311BBEA34100055881 /* Health Data Migrator */,
+				A94004301BBEA34100055881 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A94004301BBEA34100055881 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A940042F1BBEA34100055881 /* Health Data Migrator.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A94004311BBEA34100055881 /* Health Data Migrator */ = {
+			isa = PBXGroup;
+			children = (
+				A94004321BBEA34100055881 /* AppDelegate.swift */,
+				A94004371BBEA34100055881 /* MasterViewController.swift */,
+				A94004391BBEA34100055881 /* DetailViewController.swift */,
+				A940043B1BBEA34200055881 /* Main.storyboard */,
+				A940043E1BBEA34200055881 /* Assets.xcassets */,
+				A94004401BBEA34200055881 /* LaunchScreen.storyboard */,
+				A94004431BBEA34200055881 /* Info.plist */,
+				A94004341BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld */,
+			);
+			path = "Health Data Migrator";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A940042E1BBEA34100055881 /* Health Data Migrator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A94004461BBEA34200055881 /* Build configuration list for PBXNativeTarget "Health Data Migrator" */;
+			buildPhases = (
+				A940042B1BBEA34100055881 /* Sources */,
+				A940042C1BBEA34100055881 /* Frameworks */,
+				A940042D1BBEA34100055881 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Health Data Migrator";
+			productName = "Health Data Migrator";
+			productReference = A940042F1BBEA34100055881 /* Health Data Migrator.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A94004271BBEA34000055881 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0700;
+				ORGANIZATIONNAME = "Antonio Carranza López";
+				TargetAttributes = {
+					A940042E1BBEA34100055881 = {
+						CreatedOnToolsVersion = 7.0;
+						DevelopmentTeam = 9994XRWSP6;
+					};
+				};
+			};
+			buildConfigurationList = A940042A1BBEA34000055881 /* Build configuration list for PBXProject "Health Data Migrator" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A94004261BBEA34000055881;
+			productRefGroup = A94004301BBEA34100055881 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A940042E1BBEA34100055881 /* Health Data Migrator */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A940042D1BBEA34100055881 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A94004421BBEA34200055881 /* LaunchScreen.storyboard in Resources */,
+				A940043F1BBEA34200055881 /* Assets.xcassets in Resources */,
+				A940043D1BBEA34200055881 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A940042B1BBEA34100055881 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A94004361BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld in Sources */,
+				A94004331BBEA34100055881 /* AppDelegate.swift in Sources */,
+				A94004381BBEA34100055881 /* MasterViewController.swift in Sources */,
+				A940043A1BBEA34100055881 /* DetailViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		A940043B1BBEA34200055881 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A940043C1BBEA34200055881 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		A94004401BBEA34200055881 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A94004411BBEA34200055881 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		A94004441BBEA34200055881 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A94004451BBEA34200055881 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A94004471BBEA34200055881 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Health Data Migrator/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "es.365d.Health-Data-Migrator";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A94004481BBEA34200055881 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Health Data Migrator/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "es.365d.Health-Data-Migrator";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A940042A1BBEA34000055881 /* Build configuration list for PBXProject "Health Data Migrator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A94004441BBEA34200055881 /* Debug */,
+				A94004451BBEA34200055881 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A94004461BBEA34200055881 /* Build configuration list for PBXNativeTarget "Health Data Migrator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A94004471BBEA34200055881 /* Debug */,
+				A94004481BBEA34200055881 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		A94004341BBEA34100055881 /* Health_Data_Migrator.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				A94004351BBEA34100055881 /* Health_Data_Migrator.xcdatamodel */,
+			);
+			currentVersion = A94004351BBEA34100055881 /* Health_Data_Migrator.xcdatamodel */;
+			path = Health_Data_Migrator.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = A94004271BBEA34000055881 /* Project object */;
+}
