@@ -15,13 +15,13 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     var appDel: AppDelegate?
     var managedObjectContext: NSManagedObjectContext?
     let healthStore = HKHealthStore()
+    var timer = NSTimer()
     
     var detailItem: BackupFile? {
         didSet {
             // Update the view.
             self.configureView()
-            self.appDel = (UIApplication.sharedApplication().delegate as! AppDelegate)
-            self.managedObjectContext = appDel?.managedObjectContext
+
         }
     }
 
@@ -86,6 +86,9 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         
         let importButton = UIBarButtonItem(barButtonSystemItem: .Play, target: self, action: "importSamples:")
         self.navigationItem.rightBarButtonItem = importButton
+        
+        self.appDel = (UIApplication.sharedApplication().delegate as! AppDelegate)
+        self.managedObjectContext = appDel?.managedObjectContext
 
     }
 
@@ -100,6 +103,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         print("ImportSamples...")
         
         var samples: [HKObject] = []
+        var modifiedSamples: [QuantitySample] = []
         
         sender.enabled = false
 //        for var index = 0; index < self.tableView.numberOfRowsInSection(0); ++index {
@@ -117,27 +121,45 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
             let metadata  = [HKMetadataKeyWasUserEntered:false]
             let hkSample = HKQuantitySample(type: type!, quantity: quantity, startDate: sample.startDate!, endDate: sample.endDate!, metadata: metadata)
             
-            sample.foundInHealthKit = true
-            samples.append(hkSample)
+            if sample.foundInHealthKit == false {
+                samples.append(hkSample)
+                modifiedSamples.append(sample)
+            }
+
         }
-        healthStore.saveObjects(samples, withCompletion: { (success, error) -> Void in
-            
-            if error != nil {
-                print("Sin errores")
-                return
-            }
-            
-            if success {
-                print("Se importo con exito")
-            } else {
-                print("Algo falló con la importación")
-            }
-        })
+        if samples.count > 0 {
+                healthStore.saveObjects(samples, withCompletion: { (success, error) -> Void in
+                    if error != nil {
+                        print("Sin errores, terminó la importación con estado \(success)")
+                        return
+                    }
+                    
+                    if success {
+                        print("Se importaron con exito \(samples.count) samples")
+                        for sample in modifiedSamples {
+                            sample.foundInHealthKit = true
+                        }
+                    } else {
+                        print("Algo falló con la importación")
+                    }
+                })
+        } else {
+            print("Nada que importar")
+        }
         self.tableView.reloadData()
+        self.timer = NSTimer(timeInterval: 5.0, target: self, selector: "actualizarTabla", userInfo: nil, repeats: false)
+        NSRunLoop.mainRunLoop().addTimer(self.timer, forMode: NSRunLoopCommonModes)
     }
     
     // MARK: - Table view data source
 
+    func actualizarTabla() {
+        print("Actualizando la tabla")
+        //Seria bueno mostrar un mensage en pantalla
+        self.tableView.reloadData()
+        self.timer.invalidate()
+    }
+    
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return self.fetchedResultsController.sections?.count ?? 0

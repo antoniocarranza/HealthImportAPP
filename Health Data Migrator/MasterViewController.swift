@@ -133,9 +133,48 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 newSample.quantity = NSString(string: sample["value"]!).doubleValue
                 newSample.backupFile = newBackupFile
                 newSample.foundInHealthKit = findSampleInHealthKit(newSample)
+
+                //Cabria preguntarse si dicha muestra existe ya en la base de datos de HealthKit, si existe una identica no tiene sentido importar
+                //Podriamos marcarla como ya importada
+                
+                let type = HKObjectType.quantityTypeForIdentifier("HKQuantityTypeIdentifierBodyMass")
+                
+                //Query por fecha exacta
+                let explicitTimeInterval = NSPredicate(format: "%K = %@ AND %K = %@",
+                    HKPredicateKeyPathEndDate, newSample.startDate!,
+                    HKPredicateKeyPathStartDate, newSample.endDate!)
+                
+                //Query por cantidad y unidades kg...
+                let unit = HKUnit(fromString: newSample.quantityType!)
+                let value = newSample.quantity?.doubleValue
+                let quantity = HKQuantity(unit: unit, doubleValue: value!)
+
+                //let explicitValue = NSPredicate(format: "%K = %@", HKPredicateKeyPathQuantity, quantity)
+                let explicitValue = HKQuery.predicateForQuantitySamplesWithOperatorType(.EqualToPredicateOperatorType, quantity: quantity)
+                
+                //Query por intervalo de fechas (no vale)
+                //let predicateByDate = HKQuery.predicateForSamplesWithStartDate(newSample.startDate, endDate: newSample.endDate, options: .None)
+                
+                //Query por dos predicados
+                let compoundQuery = NSCompoundPredicate(andPredicateWithSubpredicates: [explicitTimeInterval,explicitValue])
+                
+                //print("Sample buscado:\r\r\(newSample)\r\r")
+                //print(predicateByDate)
+                
+                let hkQuery = HKSampleQuery(sampleType: type!, predicate: compoundQuery, limit: 10, sortDescriptors: nil, resultsHandler: { (hkSampleQuery, querySamples, error) -> Void in
+                    if (error != nil) {
+                        print(error)
+                        return
+                    }
+                    //print("Consulta finalizada para \(hkSampleQuery.predicate!) encontradas \( querySamples!.count) coincidencias")
+                    
+                    newSample.foundInHealthKit = true
+
+                })
+                self.healthStore.executeQuery(hkQuery)
+                
             }
             
-            //Cabria preguntarse si dicha muestra existe ya en la base de datos de HealthKit, si existe una identica no tiene sentido importar
             
             
             //let unit = HKUnit(fromString: sample["unit"]!)
