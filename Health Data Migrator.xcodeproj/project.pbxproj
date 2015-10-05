@@ -23,6 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A931DFA21BC2BA1700CCD140 /* Health_Data_Migrator 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Health_Data_Migrator 3.xcdatamodel"; sourceTree = "<group>"; };
 		A940042F1BBEA34100055881 /* Health Data Migrator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Health Data Migrator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A94004321BBEA34100055881 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A94004411BBEA34200055881 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -342,10 +343,11 @@
 		A94004591BBEB4F000055881 /* Health_Data_Migrator.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				A931DFA21BC2BA1700CCD140 /* Health_Data_Migrator 3.xcdatamodel */,
 				A94004711BBEE10B00055881 /* Health_Data_Migrator 2.xcdatamodel */,
 				A940045A1BBEB4F000055881 /* Health_Data_Migrator.xcdatamodel */,
 			);
-			currentVersion = A94004711BBEE10B00055881 /* Health_Data_Migrator 2.xcdatamodel */;
+			currentVersion = A931DFA21BC2BA1700CCD140 /* Health_Data_Migrator 3.xcdatamodel */;
 			path = Health_Data_Migrator.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

@@ -30,6 +30,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var detailViewController: DetailTableViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
     let healthStore = HKHealthStore()
+    //var hkTypes: Set<String> = []
+    var hkSampleTypes: Set<HKSampleType> = []
     
     // MARK: - Application live cicle
     
@@ -99,6 +101,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 let fileURLWithPath: String = documentsDirectory.stringByAppendingPathComponent(name)
                 print("Realizando el parsing a \(fileURLWithPath)")
                 xmlParser.delegate = self
+                xmlParser.processOnlyHeader = false
                 xmlParser.startParsingWithContentsOfURL(NSURL(fileURLWithPath: fileURLWithPath), fileName: name)
             }
         } catch {
@@ -124,7 +127,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         formateador.dateFormat = "yyyyMMddHHmmssZ"
         
         for sample in xmlParser.samples {
-            if sample["type"] == "HKQuantityTypeIdentifierBodyMass" {
+            let sampleType = sample["type"]
+            // == "HKQuantityTypeIdentifierBodyMass" || sampleType == "HKQuantityTypeIdentifierHeight"
+            if sampleType?.hasPrefix("HKQuantityType") != nil {
                 let newSample = NSEntityDescription.insertNewObjectForEntityForName("QuantitySample", inManagedObjectContext: context) as! QuantitySample
                 newSample.source = sample["source"]
                 newSample.startDate = formateador.dateFromString(sample["startDate"]!)
@@ -132,12 +137,14 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 newSample.quantityType = sample["unit"]
                 newSample.quantity = NSString(string: sample["value"]!).doubleValue
                 newSample.backupFile = newBackupFile
-                newSample.foundInHealthKit = findSampleInHealthKit(newSample)
+                newSample.typeIdentifier = sampleType
+                //hkTypes.insert(sampleType!)
+                hkSampleTypes.insert(HKObjectType.quantityTypeForIdentifier(sampleType!)!)
 
                 //Cabria preguntarse si dicha muestra existe ya en la base de datos de HealthKit, si existe una identica no tiene sentido importar
                 //Podriamos marcarla como ya importada
                 
-                let type = HKObjectType.quantityTypeForIdentifier("HKQuantityTypeIdentifierBodyMass")
+                let type = HKObjectType.quantityTypeForIdentifier(sampleType!)
                 
                 //Query por fecha exacta
                 let explicitTimeInterval = NSPredicate(format: "%K = %@ AND %K = %@",
@@ -196,60 +203,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             abort()
         }
     }
-
-    func findSampleInHealthKit(sample: QuantitySample) -> Bool {
-        
-        
-            return false
-
-        // we create a predicate to filter our data
-//        let bodyMassType = HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyMass)
-//        let predicate = HKQuery.predicateForSamplesWithStartDate(sample.startDate ,endDate: sample.endDate ,options: .None)
-//        
-//        let unit = HKUnit(fromString: "Kg")
-//        let value = (sample.quantity as! Double)
-//        let quantity = HKQuantity(unit: unit, doubleValue: value)
-//        let predicate2 = HKQuery.predicateForQuantitySamplesWithOperatorType(NSPredicateOperatorType.EqualToPredicateOperatorType, quantity: quantity)
-//        
-//        let compPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, predicate2])
-//        
-//        // I had a sortDescriptor to get the recent data first
-//        
-//        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-//        
-//        // we create our query with a block completion to execute
-//        
-//        let query = HKSampleQuery(sampleType: bodyMassType!, predicate: compPredicate, limit: 30, sortDescriptors: [sortDescriptor]) { (query, tmpResult, error) -> Void in
-//            
-//            if error != nil {
-//                
-//                // something happened
-//                print("Error")
-//                return
-//                
-//                
-//            }
-//            
-//            if let result = tmpResult {
-//                
-//                print("Resultados")
-//                // do something with my data
-//                for item in result {
-//                    if let sample = item as? HKQuantitySample {
-//                        
-//                        //let value = (sample.value == HKCategoryValueSleepAnalysis.InBed.rawValue) ? "InBed" : "Asleep"
-//                        
-//                        print("Healthkit Peso: \(sample.startDate) \(sample.endDate) - source: \(sample.sourceRevision.source.name) - value: \(sample.quantity)")
-//                    }
-//                }
-//            }
-//        }
-//        
-//        
-//        // finally, we execute our query
-//        healthStore.executeQuery(query)
-//        return true
-    }
+    
 
     
     // MARK: - Segues
@@ -257,15 +211,35 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
-            let SelectedBackupFile = self.fetchedResultsController.objectAtIndexPath(indexPath)
+                
+                pedirPermisos()
+                
+                let selectedBackupFile = self.fetchedResultsController.objectAtIndexPath(indexPath)
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailTableViewController
-                controller.detailItem = (SelectedBackupFile as! BackupFile)
+                controller.detailItem = (selectedBackupFile as! BackupFile)
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
     }
 
+    
+    // Actualizacción de permisos
+    func pedirPermisos() {
+        if HKHealthStore.isHealthDataAvailable() {
+            print("HealhtKit esta disponible")
+            //TODO : Sería conveniente trasladarlo a los tipos detectados en el fichero a importar
+            //Autorización para leer/Escribir ciertos tipos
+            healthStore.requestAuthorizationToShareTypes(hkSampleTypes, readTypes: hkSampleTypes, completion: {
+                    (success, error) -> Void in
+                    print(success, error)
+                })
+
+        } else {
+            print("HealthKit no esta disponible")
+        }
+    }
+    
     // MARK: - Table View
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {

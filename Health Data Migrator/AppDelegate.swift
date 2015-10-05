@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             //TODO : Sería conveniente trasladarlo a los tipos detectados en el fichero a importar
             //Autorización para leer/Escribir ciertos tipos
             if let _ = HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyMass) {
-                let setType = Set<HKSampleType>(arrayLiteral: HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyMass)!, HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyTemperature)!)
+                let setType = Set<HKSampleType>(arrayLiteral: HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyMass)!, HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyTemperature)!, HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierHeight)!)
                 healthStore.requestAuthorizationToShareTypes(setType, readTypes: setType, completion: {
                     (success, error) -> Void in
                     print(success, error)

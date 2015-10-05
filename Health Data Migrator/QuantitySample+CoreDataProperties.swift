@@ -21,5 +21,6 @@ extension QuantitySample {
     @NSManaged var startDate: NSDate?
     @NSManaged var backupFile: BackupFile?
     @NSManaged var foundInHealthKit: Bool
+    @NSManaged var typeIdentifier: String?
 
 }

@@ -25,6 +25,8 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         }
     }
 
+    
+    
     // MARK: Core Data
     
     // MARK: - Fetched results controller
@@ -89,9 +91,14 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         
         self.appDel = (UIApplication.sharedApplication().delegate as! AppDelegate)
         self.managedObjectContext = appDel?.managedObjectContext
+        
+        //self.timer = NSTimer(timeInterval: 10.0, target: self, selector: "actualizarTabla", userInfo: nil, repeats: true)
+        //NSRunLoop.mainRunLoop().addTimer(self.timer, forMode: NSRunLoopCommonModes)
 
     }
 
+
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -113,7 +120,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         for item in self.fetchedResultsController.fetchedObjects! {
             let sample = (item as! QuantitySample)
             
-            let type = HKObjectType.quantityTypeForIdentifier("HKQuantityTypeIdentifierBodyMass")
+            let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier!)
             let unit = HKUnit(fromString: sample.quantityType!)
 
             let value = sample.quantity?.doubleValue
@@ -156,7 +163,9 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     func actualizarTabla() {
         print("Actualizando la tabla")
         //Seria bueno mostrar un mensage en pantalla
-        self.tableView.reloadData()
+        dispatch_async(dispatch_get_main_queue(),{
+            self.tableView.reloadData()
+        })
         self.timer.invalidate()
     }
     
@@ -185,7 +194,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         formateador.dateStyle = .ShortStyle
         formateador.timeStyle = .ShortStyle
         
-        cell.textLabel!.text = "\(sample.source!), \(formateador.stringFromDate(sample.startDate!))"
+        cell.textLabel!.text = "\(sample.source!), \(formateador.stringFromDate(sample.startDate!)) \(sample.typeIdentifier!)"
         if sample.quantity != nil && sample.quantityType != nil {
                 cell.detailTextLabel!.text = "\(sample.quantity!) \(sample.quantityType!)"
             } else {

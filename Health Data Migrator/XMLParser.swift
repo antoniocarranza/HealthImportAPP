@@ -22,6 +22,7 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     var delegate: XMLParserDelegate?
     var isValidBackupFile: Bool = false
     var samples:[Dictionary<String,String>] = []
+    var processOnlyHeader: Bool = false
     
     func startParsingWithContentsOfURL(rssURL: NSURL, fileName: String) {
         let parser = NSXMLParser(contentsOfURL: rssURL)
@@ -34,7 +35,9 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     func parser(parser: NSXMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, var attributes attributeDict: [String : String]) {
 
         if elementName == "Record" {
-            samples.append(attributeDict)
+            if !self.processOnlyHeader {
+                samples.append(attributeDict)
+            }
         }
         if elementName == "HealthData" {
             self.isValidBackupFile = true
@@ -49,7 +52,7 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     }
     
     func parserDidEndDocument(parser: NSXMLParser) {
-        if (self.exportDate != nil) && (self.isValidBackupFile) && (self.samples.count != 0) {
+        if (self.exportDate != nil) && (self.isValidBackupFile)  {
             delegate?.parsingWasFinished(self)
         } else {
             print("El fichero no es valido")
