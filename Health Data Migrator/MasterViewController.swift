@@ -30,8 +30,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var detailViewController: DetailTableViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
     let healthStore = HKHealthStore()
-    //var hkTypes: Set<String> = []
-    var hkSampleTypes: Set<HKSampleType> = []
+    
+    @IBOutlet weak var progressBar: UIProgressView!
     
     // MARK: - Application live cicle
     
@@ -43,6 +43,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         //let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
         //self.navigationItem.rightBarButtonItem = addButton
         
+        //progressBar.hidden = true
+        
         let refreshButton = UIBarButtonItem(barButtonSystemItem: .Refresh, target: self, action: "refreshDocumentsFolderFileList:")
         self.navigationItem.rightBarButtonItem = refreshButton
         
@@ -51,13 +53,20 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailTableViewController
         }
         
-        refreshDocumentsFolderFileList(self)
-        
     }
 
     override func viewWillAppear(animated: Bool) {
         self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
         super.viewWillAppear(animated)
+
+        //Asignamos función al pull to refresh y cambiamos el titulo
+        self.refreshControl?.addTarget(self, action: "refreshDocumentsFolderFileList:", forControlEvents: UIControlEvents.ValueChanged)
+        self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("PullToRefresh", comment: "Pull to Refresh"))
+        
+        //Actualizamos la lista de documentos
+        //refreshDocumentsFolderFileList(self)
+
+
     }
 
     override func didReceiveMemoryWarning() {
@@ -68,7 +77,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Documents and Parsing
     
     func refreshDocumentsFolderFileList(sender: AnyObject) {
+        
         print("refreshDocumentsFolderFileList:")
+
+        self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("Refreshing", comment: "Refreshing"))
+        //progressBar.hidden = false
+        //progressBar.setProgress(0, animated: false)
+        
         let context = self.fetchedResultsController.managedObjectContext
         //let entity = self.fetchedResultsController.fetchRequest.entity!
         
@@ -83,33 +98,81 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             }
             myList.removeAll(keepCapacity: false)
             try context.save()
-            self.tableView.reloadData()
+            //self.tableView.reloadData()
 
         } catch {
             print("Error")
         }
         
-        //Mandamos al parser leer los ficheros del document Directory
-        var paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-        var documentsDirectory : String;
-        documentsDirectory = paths[0] as String
-        let fileManager: NSFileManager = NSFileManager()
-        do {
-            let fileList = try fileManager.contentsOfDirectoryAtPath(documentsDirectory)
-            for name in fileList {
-                let xmlParser: XMLParser = XMLParser()
-                let fileURLWithPath: String = documentsDirectory.stringByAppendingPathComponent(name)
-                print("Realizando el parsing a \(fileURLWithPath)")
-                xmlParser.delegate = self
-                xmlParser.processOnlyHeader = false
-                xmlParser.startParsingWithContentsOfURL(NSURL(fileURLWithPath: fileURLWithPath), fileName: name)
+//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
+//            var paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+//            var documentsDirectory : String;
+//            documentsDirectory = paths[0] as String
+//            let fileManager: NSFileManager = NSFileManager()
+//            do {
+//                let fileList = try fileManager.contentsOfDirectoryAtPath(documentsDirectory)
+//                for name in fileList {
+//                    if name.hasSuffix(".xml") {
+//                        
+//                        let request = NSFetchRequest(entityName: "BackupFile")
+//                        request.predicate = NSPredicate(format: "fileName = %@", name)
+//                        var miFiles = try context.executeFetchRequest(request)
+//                        for item: AnyObject in miFiles {
+//                            context.deleteObject(item as! NSManagedObject)
+//                        }
+//                        miFiles.removeAll(keepCapacity: false)
+//                        try context.save()
+//                        
+//                        let xmlParser: XMLParser = XMLParser()
+//                        let fileURLWithPath: String = documentsDirectory.stringByAppendingPathComponent(name)
+//                        print("Realizando el parsing a \(fileURLWithPath)")
+//                        xmlParser.delegate = self
+//                        xmlParser.processOnlyHeader = false
+//                        xmlParser.startParsingWithContentsOfURL(NSURL(fileURLWithPath: fileURLWithPath), fileName: name)
+//                    }
+//                }
+//            } catch {
+//                print("Error Cargando el listado de ficheros!")
+//            }
+//            self.refreshControl?.endRefreshing()
+//            self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("PullToRefresh", comment: "Pull to Refresh"))
+//
+//        }
+        
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            var paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+            var documentsDirectory : String;
+            documentsDirectory = paths[0] as String
+            let fileManager: NSFileManager = NSFileManager()
+            do {
+                let fileList = try fileManager.contentsOfDirectoryAtPath(documentsDirectory)
+                print(documentsDirectory)
+                for name in fileList {
+                    if name.hasSuffix(".xml") {
+                        let xmlParser: XMLParser = XMLParser()
+                        let fileURLWithPath: String = documentsDirectory.stringByAppendingPathComponent(name)
+                        print("Realizando el parsing a \(fileURLWithPath)")
+                        xmlParser.delegate = self
+                        xmlParser.processOnlyHeader = false
+                        xmlParser.startParsingWithContentsOfURL(NSURL(fileURLWithPath: fileURLWithPath), fileName: name)
+                    }
+                }
+            } catch {
+                print("Error Cargando el listado de ficheros!")
             }
-        } catch {
-            print("Error Cargando el listado de ficheros!")
-        }
-    }
+            self.refreshControl?.endRefreshing()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("PullToRefresh", comment: "Pull to Refresh"))
 
+        }
+        
+        //Mandamos al parser leer los ficheros del document Directory
+        //progressBar.setProgress(0, animated: false)
+        //progressBar.hidden = true
+        
+    }
+    
     func parsingWasFinished(xmlParser: XMLParser) {
+        
         //Cuando el Parser va terminando de leer los documentos los carga en la tabla y avisa a la vista
         
         print("parsingWasFinished:")
@@ -123,77 +186,42 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         newBackupFile.exportDate = xmlParser.exportDate
         newBackupFile.lastImportDate = nil
         
+        pedirPermisos(newBackupFile)
+        
         let formateador = NSDateFormatter()
         formateador.dateFormat = "yyyyMMddHHmmssZ"
         
         for sample in xmlParser.samples {
             let sampleType = sample["type"]
             // == "HKQuantityTypeIdentifierBodyMass" || sampleType == "HKQuantityTypeIdentifierHeight"
-            if sampleType?.hasPrefix("HKQuantityType") != nil {
+            
+            if sampleType?.hasPrefix("HKQuantityType") == true {
                 let newSample = NSEntityDescription.insertNewObjectForEntityForName("QuantitySample", inManagedObjectContext: context) as! QuantitySample
                 newSample.source = sample["source"]
                 newSample.startDate = formateador.dateFromString(sample["startDate"]!)
                 newSample.endDate = formateador.dateFromString(sample["endDate"]!)
                 newSample.quantityType = sample["unit"]
-                newSample.quantity = NSString(string: sample["value"]!).doubleValue
+                
+                if sample["value"] != nil {
+                    newSample.quantity = NSString(string: sample["value"]!).doubleValue
+                }
+                
                 newSample.backupFile = newBackupFile
                 newSample.typeIdentifier = sampleType
-                //hkTypes.insert(sampleType!)
-                hkSampleTypes.insert(HKObjectType.quantityTypeForIdentifier(sampleType!)!)
-
-                //Cabria preguntarse si dicha muestra existe ya en la base de datos de HealthKit, si existe una identica no tiene sentido importar
-                //Podriamos marcarla como ya importada
-                
-                let type = HKObjectType.quantityTypeForIdentifier(sampleType!)
-                
-                //Query por fecha exacta
-                let explicitTimeInterval = NSPredicate(format: "%K = %@ AND %K = %@",
-                    HKPredicateKeyPathEndDate, newSample.startDate!,
-                    HKPredicateKeyPathStartDate, newSample.endDate!)
-                
-                //Query por cantidad y unidades kg...
-                let unit = HKUnit(fromString: newSample.quantityType!)
-                let value = newSample.quantity?.doubleValue
-                let quantity = HKQuantity(unit: unit, doubleValue: value!)
-
-                //let explicitValue = NSPredicate(format: "%K = %@", HKPredicateKeyPathQuantity, quantity)
-                let explicitValue = HKQuery.predicateForQuantitySamplesWithOperatorType(.EqualToPredicateOperatorType, quantity: quantity)
-                
-                //Query por intervalo de fechas (no vale)
-                //let predicateByDate = HKQuery.predicateForSamplesWithStartDate(newSample.startDate, endDate: newSample.endDate, options: .None)
-                
-                //Query por dos predicados
-                let compoundQuery = NSCompoundPredicate(andPredicateWithSubpredicates: [explicitTimeInterval,explicitValue])
-                
-                //print("Sample buscado:\r\r\(newSample)\r\r")
-                //print(predicateByDate)
-                
-                let hkQuery = HKSampleQuery(sampleType: type!, predicate: compoundQuery, limit: 10, sortDescriptors: nil, resultsHandler: { (hkSampleQuery, querySamples, error) -> Void in
-                    if (error != nil) {
-                        print(error)
-                        return
-                    }
-                    //print("Consulta finalizada para \(hkSampleQuery.predicate!) encontradas \( querySamples!.count) coincidencias")
-                    
-                    newSample.foundInHealthKit = true
-
-                })
-                self.healthStore.executeQuery(hkQuery)
                 
             }
-            
-            
-            
-            //let unit = HKUnit(fromString: sample["unit"]!)
-            //let value = (sample["value"]! as NSString).doubleValue
-            //let quantity = HKQuantity(unit: unit, doubleValue: value)
-            //let sample = HKQuantitySample(type: quantityType!, quantity: quantity, startDate: startDate!, endDate: endDate!, metadata: metadata)
-            
         }
         
+//        //Solicitamos autorización para los tipos detectados en el fichero
+//        healthStore.requestAuthorizationToShareTypes(hkSampleTypes, readTypes: hkSampleTypes, completion: {
+//            (success, error) -> Void in
+//            print("Autorización solicitada: \(success), Error: \(error)")
+//        })
+      
         // Intentamos guardar los nuevos datos en tabla.
         do {
             try context.save()
+            print("context saved")
             self.tableView.reloadData()
             print("Recargando los datos de la tabla")
         } catch {
@@ -204,37 +232,45 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
     
-
-    
     // MARK: - Segues
-
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
                 
-                pedirPermisos()
+                let selectedBackupFile = (self.fetchedResultsController.objectAtIndexPath(indexPath) as! BackupFile)
+                self.pedirPermisos(selectedBackupFile)
                 
-                let selectedBackupFile = self.fetchedResultsController.objectAtIndexPath(indexPath)
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailTableViewController
-                controller.detailItem = (selectedBackupFile as! BackupFile)
+                controller.detailItem = selectedBackupFile
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
     }
-
     
     // Actualizacción de permisos
-    func pedirPermisos() {
+    func pedirPermisos(backupFile: BackupFile) {
+        
         if HKHealthStore.isHealthDataAvailable() {
-            print("HealhtKit esta disponible")
+            print("HealhtKit esta disponible. Solicitando permisos...")
             //TODO : Sería conveniente trasladarlo a los tipos detectados en el fichero a importar
             //Autorización para leer/Escribir ciertos tipos
-            healthStore.requestAuthorizationToShareTypes(hkSampleTypes, readTypes: hkSampleTypes, completion: {
-                    (success, error) -> Void in
-                    print(success, error)
-                })
+            
+            if backupFile.quantitySamples?.count > 0 {
+                var hkQuantitySampleTypes: Set<HKSampleType> = []
+                for quantitySample in backupFile.quantitySamples! {
+                    let hkQuantitySampleType = (quantitySample as! QuantitySample)
+                    hkQuantitySampleTypes.insert(HKObjectType.quantityTypeForIdentifier(hkQuantitySampleType.typeIdentifier!)!)
+                }
+                if hkQuantitySampleTypes.count > 0 {
+                    self.healthStore.requestAuthorizationToShareTypes(hkQuantitySampleTypes, readTypes: hkQuantitySampleTypes, completion: {
+                        (success, error) -> Void in
+                        print("Petición de permisos para \(hkQuantitySampleTypes)\r con resultado de \(success), Error: \(error)")
 
+                    })
+                }
+            }
         } else {
             print("HealthKit no esta disponible")
         }
@@ -252,6 +288,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     }
 
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        return 80
+    }
+    
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
         self.configureCell(cell, atIndexPath: indexPath)
@@ -280,12 +320,20 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
-        let object = self.fetchedResultsController.objectAtIndexPath(indexPath)
-        cell.textLabel!.text = object.valueForKey("fileName")!.description
         let formateador = NSDateFormatter()
         formateador.dateStyle = .LongStyle
         formateador.timeStyle = .ShortStyle
-        cell.detailTextLabel!.text = formateador.stringFromDate(object.valueForKey("exportDate") as! NSDate)
+        
+        let samples = NSLocalizedString("Samples", comment: "Samples")
+        let exportedOn = NSLocalizedString("ExportedOn", comment: "Exported on")
+        let backupFile = (self.fetchedResultsController.objectAtIndexPath(indexPath) as! BackupFile)
+        let samplesCount = backupFile.quantitySamples!.count
+        let exportDate = formateador.stringFromDate(backupFile.exportDate!)
+        let fileName = backupFile.fileName
+        cell.textLabel!.text = fileName
+        cell.detailTextLabel!.text = "\(samplesCount) \(samples)\r\(exportedOn) \(exportDate)"
+        cell.imageView!.frame = CGRectMake(0, 0, 32, 32)
+        
     }
 
     // MARK: - Fetched results controller

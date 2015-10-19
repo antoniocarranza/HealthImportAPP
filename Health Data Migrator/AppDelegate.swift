@@ -29,19 +29,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         
         if HKHealthStore.isHealthDataAvailable() {
             print("HealhtKit esta disponible")
-            //TODO : Sería conveniente trasladarlo a los tipos detectados en el fichero a importar
-            //Autorización para leer/Escribir ciertos tipos
-            if let _ = HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyMass) {
-                let setType = Set<HKSampleType>(arrayLiteral: HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyMass)!, HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierBodyTemperature)!, HKObjectType.quantityTypeForIdentifier(HKQuantityTypeIdentifierHeight)!)
-                healthStore.requestAuthorizationToShareTypes(setType, readTypes: setType, completion: {
-                    (success, error) -> Void in
-                    print(success, error)
-                })
-            }
         } else {
             print("HealthKit no esta disponible")
         }
         
+//        let healthStore: HKHealthStore? = {
+//            if HKHealthStore.isHealthDataAvailable() {
+//                return HKHealthStore()
+//            } else {
+//                return nil
+//            }
+//            }()
+//        
+//        let dateOfBirthCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
+//            HKCharacteristicTypeIdentifierDateOfBirth)
+//        
+//        let biologicalSexCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
+//            HKCharacteristicTypeIdentifierBiologicalSex)
+//        
+//        let bloodTypeCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
+//            HKCharacteristicTypeIdentifierBloodType)
+//        
+//        let dataTypesToRead = NSSet(objects:
+//            dateOfBirthCharacteristic!,
+//            biologicalSexCharacteristic!,
+//            bloodTypeCharacteristic!)
+//        
+//        healthStore?.requestAuthorizationToShareTypes(nil,
+//            readTypes: dataTypesToRead as! Set<HKObjectType>,
+//            completion: { (success, error) -> Void in
+//                if success {
+//                    print("success")
+//                } else {
+//                    print(error!.description)
+//                }
+//        })
         
         return true
     }
@@ -145,4 +167,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     }
 
 }
-
