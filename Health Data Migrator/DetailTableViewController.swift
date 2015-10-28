@@ -20,6 +20,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     var managedObjectContext: NSManagedObjectContext?
     let healthStore = HKHealthStore()
     var checkForDuplicatesPushed = false
+    var querySet: Set<QuantitySample> = []
     
     var detailItem: BackupFile? {
         didSet {
@@ -120,14 +121,14 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
             let sample = (item as! QuantitySample)
             //Cabria preguntarse si dicha muestra existe ya en la base de datos de HealthKit, si existe una identica no tiene sentido importar
             //Podriamos marcarla como ya importada
-            let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier!)
+            let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier)
             //Query por fecha exacta
             let explicitTimeInterval = NSPredicate(format: "%K = %@ AND %K = %@",
-                HKPredicateKeyPathEndDate, sample.startDate!,
-                HKPredicateKeyPathStartDate, sample.endDate!)
+                HKPredicateKeyPathEndDate, sample.startDate,
+                HKPredicateKeyPathStartDate, sample.endDate)
             //Query por cantidad y unidades kg...
-            let unit = HKUnit(fromString: sample.quantityType!)
-            let value = Double(sample.quantity!.description)
+            let unit = HKUnit(fromString: sample.quantityType)
+            let value = Double(sample.quantity.description)
             let quantity = HKQuantity(unit: unit, doubleValue: value!)
             //let explicitValue = NSPredicate(format: "%K = %@", HKPredicateKeyPathQuantity, quantity)
             let explicitValue = HKQuery.predicateForQuantitySamplesWithOperatorType(.EqualToPredicateOperatorType, quantity: quantity)
@@ -144,15 +145,23 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
                     return
                 }
                 //print("Consulta finalizada para \(hkSampleQuery.predicate!) encontradas \( querySamples!.count) coincidencias")
-                sample.foundInHealthKit = true
-                self.actualizarTabla()
+                if querySamples?.count != 0 {
+                    sample.foundInHealthKit = true
+                }
+                
+                self.querySet.remove(sample)
+                if self.querySet.count == 0 {
+                    self.actualizarTabla()
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        self.notifyUser(NSLocalizedString("CheckForDuplicates", comment: "Buscar Duplicados"), err: NSLocalizedString("CheckForDuplicatesFinished", comment: "La Busqueda de duplicados finalizo"))
+                    })
+                }
             })
+            querySet.insert(sample)
             self.healthStore.executeQuery(hkQuery)
         }
-        notifyUser(NSLocalizedString("CheckForDuplicates", comment: "Buscar Duplicados"), err: NSLocalizedString("CheckForDuplicatesFinished", comment: "La Busqueda de duplicados finalizo"))
         checkForDuplicatesPushed = true
     }
-    
     @IBAction func importSamplesAction(sender: UIBarButtonItem) {
         if !checkForDuplicatesPushed {
             alertUserSearchForDuplicates()
@@ -160,7 +169,6 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
             importSamples(sender)
         }
     }
-    
     
     func importSamples(sender: UIBarButtonItem) {
         print("ImportSamples...")
@@ -173,13 +181,13 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         for item in self.fetchedResultsController.fetchedObjects! {
             let sample = (item as! QuantitySample)
             
-            let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier!)
-            let unit = HKUnit(fromString: sample.quantityType!)
+            let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier)
+            let unit = HKUnit(fromString: sample.quantityType)
 
-            let value = sample.quantity?.doubleValue
-            let quantity = HKQuantity(unit: unit, doubleValue: value!)
+            let value = sample.quantity.doubleValue
+            let quantity = HKQuantity(unit: unit, doubleValue: value)
             let metadata  = [HKMetadataKeyWasUserEntered:false]
-            let hkSample = HKQuantitySample(type: type!, quantity: quantity, startDate: sample.startDate!, endDate: sample.endDate!, metadata: metadata)
+            let hkSample = HKQuantitySample(type: type!, quantity: quantity, startDate: sample.startDate, endDate: sample.endDate, metadata: metadata)
             
             if sample.foundInHealthKit == false {
                 samples.append(hkSample)
@@ -230,7 +238,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         // #warning Incomplete implementation, return the number of sections
         return self.fetchedResultsController.sections?.count ?? 0
     }
-
+    
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if let sections = self.fetchedResultsController.sections {
             let currentSection = sections[section]
@@ -253,7 +261,6 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         let sectionInfo = self.fetchedResultsController.sections![section]
         return sectionInfo.numberOfObjects
     }
-
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("sampleCell", forIndexPath: indexPath)
@@ -269,12 +276,9 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         formateador.dateStyle = .ShortStyle
         formateador.timeStyle = .ShortStyle
         
-        cell.detailTextLabel!.text = "\(sample.source!), \(formateador.stringFromDate(sample.startDate!))"
-        if sample.quantity != nil && sample.quantityType != nil {
-                cell.textLabel!.text = "\(sample.quantity!) \(sample.quantityType!)"
-            } else {
-                cell.textLabel!.text = ""
-            }
+        cell.detailTextLabel!.text = "\(sample.source), \(formateador.stringFromDate(sample.startDate))"
+        //cell.imageView?.image = UIImage(named: sample.typeIdentifier! )
+        cell.textLabel!.text = "\(sample.quantity) \(sample.quantityType)"
         if sample.foundInHealthKit {
             cell.accessoryType = .Checkmark
         } else {
@@ -282,7 +286,6 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         }
     }
 
-    
     /*
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {

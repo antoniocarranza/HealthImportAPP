@@ -14,13 +14,13 @@ import CoreData
 
 extension QuantitySample {
 
-    @NSManaged var endDate: NSDate?
-    @NSManaged var quantity: NSNumber?
-    @NSManaged var quantityType: String?
-    @NSManaged var source: String?
-    @NSManaged var startDate: NSDate?
+    @NSManaged var endDate: NSDate
+    @NSManaged var quantity: NSNumber
+    @NSManaged var quantityType: String
+    @NSManaged var source: String
+    @NSManaged var startDate: NSDate
     @NSManaged var backupFile: BackupFile?
     @NSManaged var foundInHealthKit: Bool
-    @NSManaged var typeIdentifier: String?
+    @NSManaged var typeIdentifier: String
 
 }
