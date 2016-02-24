@@ -18,7 +18,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     
     var appDel: AppDelegate?
     var managedObjectContext: NSManagedObjectContext?
-    let healthStore = HKHealthStore()
+    var healthStore: HKHealthStore? = nil
     var checkForDuplicatesPushed = false
     var querySet: Set<QuantitySample> = []
     
@@ -29,9 +29,14 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         }
     }
     
+    var samplesFilter: String? {
+        didSet {
+            self.configureView()
+        }
+    }
     
-    // MARK: Core Data
     
+    // MARK: Core Data    
     // MARK: - Fetched results controller
     
     var fetchedResultsController: NSFetchedResultsController {
@@ -48,9 +53,10 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         fetchRequest.fetchBatchSize = 20
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "typeIdentifier", ascending: false)
+        let sortDescriptorTypeIdentifier = NSSortDescriptor(key: "typeIdentifier", ascending: false)
+        let sortDescriptorStartDate = NSSortDescriptor(key: "startDate", ascending: true)
         
-        fetchRequest.sortDescriptors = [sortDescriptor]
+        fetchRequest.sortDescriptors = [sortDescriptorTypeIdentifier,sortDescriptorStartDate]
         
         // Edit the section name key path and cache name if appropriate.
         // nil for section name key path means "no sections".
@@ -58,8 +64,13 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         aFetchedResultsController.delegate = self
         _fetchedResultsController = aFetchedResultsController
         
-        let predicateByFileName = NSPredicate(format: "backupFile = %@", (self.detailItem!))
-        fetchRequest.predicate = predicateByFileName
+        if self.samplesFilter != nil {
+            let predicateByType = NSPredicate(format: "typeIdentifier = %@ AND backupFile = %@", (self.samplesFilter)!, (self.detailItem!))
+            fetchRequest.predicate = predicateByType
+        } else {
+            let predicateByFileName = NSPredicate(format: "backupFile = %@", (self.detailItem!))
+            fetchRequest.predicate = predicateByFileName
+        }
         
         do {
             try _fetchedResultsController!.performFetch()
@@ -74,14 +85,21 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     }
     var _fetchedResultsController: NSFetchedResultsController? = nil
 
-    
     func configureView() {
         // Update the user interface for the detail item.
-        if let detail = self.detailItem {
-            self.title = detail.fileName
+    }
+   
+    override func viewWillAppear(animated: Bool) {
+        self.actualizarTabla()
+        self.navigationController?.setToolbarHidden(false, animated: false)
+        if fetchedResultsController.fetchedObjects?.count < 5000 {
+            self.checkForDuplicatesButton.enabled = true
         }
     }
-
+    
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.setToolbarHidden(true, animated: false)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -104,126 +122,12 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         //NSRunLoop.mainRunLoop().addTimer(self.timer, forMode: NSRunLoopCommonModes)
         
         self.checkForDuplicatesButton.title = NSLocalizedString("CheckForDuplicates", comment: "Check For samples that will duplicate values on healthkit")
-        self.importSamplesButton.title = NSLocalizedString("ImportSamples", comment: "Import Samples")
+        self.importSamplesButton.title = NSLocalizedString("ImportThisSamples", comment: "Import This Samples")
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-
-    // MARK: - Authorize and Import
-    @IBAction func checkForDuplicatesAction(sender: UIBarButtonItem) {
-        
-        sender.enabled = false
-        
-        for item in (self.detailItem?.quantitySamples)! {
-            let sample = (item as! QuantitySample)
-            //Cabria preguntarse si dicha muestra existe ya en la base de datos de HealthKit, si existe una identica no tiene sentido importar
-            //Podriamos marcarla como ya importada
-            let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier)
-            //Query por fecha exacta
-            let explicitTimeInterval = NSPredicate(format: "%K = %@ AND %K = %@",
-                HKPredicateKeyPathEndDate, sample.startDate,
-                HKPredicateKeyPathStartDate, sample.endDate)
-            //Query por cantidad y unidades kg...
-            let unit = HKUnit(fromString: sample.quantityType)
-            let value = Double(sample.quantity.description)
-            let quantity = HKQuantity(unit: unit, doubleValue: value!)
-            //let explicitValue = NSPredicate(format: "%K = %@", HKPredicateKeyPathQuantity, quantity)
-            let explicitValue = HKQuery.predicateForQuantitySamplesWithOperatorType(.EqualToPredicateOperatorType, quantity: quantity)
-            //Query por intervalo de fechas (no vale)
-            //let predicateByDate = HKQuery.predicateForSamplesWithStartDate(newSample.startDate, endDate: newSample.endDate, options: .None)
-            //Query por dos predicados
-            let compoundQuery = NSCompoundPredicate(andPredicateWithSubpredicates: [explicitTimeInterval,explicitValue])
-            //print("Sample buscado:\r\r\(newSample)\r\r")
-            //print(predicateByDate)
-
-            let hkQuery = HKSampleQuery(sampleType: type!, predicate: compoundQuery, limit: 10, sortDescriptors: nil, resultsHandler: { (hkSampleQuery, querySamples, error) -> Void in
-                if (error != nil) {
-                    print(error)
-                    return
-                }
-                //print("Consulta finalizada para \(hkSampleQuery.predicate!) encontradas \( querySamples!.count) coincidencias")
-                if querySamples?.count != 0 {
-                    sample.foundInHealthKit = true
-                }
-                
-                self.querySet.remove(sample)
-                if self.querySet.count == 0 {
-                    self.actualizarTabla()
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        self.notifyUser(NSLocalizedString("CheckForDuplicates", comment: "Buscar Duplicados"), err: NSLocalizedString("CheckForDuplicatesFinished", comment: "La Busqueda de duplicados finalizo"))
-                    })
-                }
-            })
-            querySet.insert(sample)
-            self.healthStore.executeQuery(hkQuery)
-        }
-        checkForDuplicatesPushed = true
-    }
-    @IBAction func importSamplesAction(sender: UIBarButtonItem) {
-        if !checkForDuplicatesPushed {
-            alertUserSearchForDuplicates()
-        } else {
-            importSamples(sender)
-        }
-    }
-    
-    func importSamples(sender: UIBarButtonItem) {
-        print("ImportSamples...")
-        
-        sender.enabled = false
-        
-        var samples: [HKObject] = []
-        var modifiedSamples: [QuantitySample] = []
-        
-        for item in self.fetchedResultsController.fetchedObjects! {
-            let sample = (item as! QuantitySample)
-            
-            let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier)
-            let unit = HKUnit(fromString: sample.quantityType)
-
-            let value = sample.quantity.doubleValue
-            let quantity = HKQuantity(unit: unit, doubleValue: value)
-            let metadata  = [HKMetadataKeyWasUserEntered:false]
-            let hkSample = HKQuantitySample(type: type!, quantity: quantity, startDate: sample.startDate, endDate: sample.endDate, metadata: metadata)
-            
-            if sample.foundInHealthKit == false {
-                samples.append(hkSample)
-                modifiedSamples.append(sample)
-            }
-
-        }
-        if samples.count > 0 {
-                healthStore.saveObjects(samples, withCompletion: { (success, error) -> Void in
-                    if error != nil {
-                        print("Errores, terminó la importación con estado \(success)")
-                        print(error)
-                        return
-                    }
-                    
-                    if success {
-                        //Dialogo informando del resultado
-                        print("Se importaron con exito \(samples.count) samples")
-                        for sample in modifiedSamples {
-                            sample.foundInHealthKit = true
-                        }
-                        self.actualizarTabla()
-                        let msg =   NSLocalizedString("SamplesImported", comment: "Number of samples imported")
-                        let userInfo = "\(samples.count.description) \(msg)"
-                        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                            self.notifyUser(NSLocalizedString("ImportSuccessfull", comment: "Import Successfull"), err: userInfo )
-                        })
-                    } else {
-                        print("Algo falló con la importación")
-                    }
-                })
-        } else {
-            print("Nada que importar")
-            self.notifyUser(NSLocalizedString("NothingToImport", comment: "Nothing to Import"), err: NSLocalizedString("AllSamplesAllreadyExist", comment: "All Samples already exists"))
-        }
-        self.actualizarTabla()
     }
     
     // MARK: - Table view data source
@@ -251,9 +155,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
             }
             return "\(currentSection.numberOfObjects) \(numberOfSamples) \(headerTitle)"
         }
-        
         return nil
-        
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -272,20 +174,35 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
 
         let sample = (self.fetchedResultsController.objectAtIndexPath(indexPath) as! QuantitySample)
 
-        let formateador = NSDateFormatter()
-        formateador.dateStyle = .ShortStyle
-        formateador.timeStyle = .ShortStyle
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateStyle = .ShortStyle
+        dateFormatter.timeStyle = .ShortStyle
         
-        cell.detailTextLabel!.text = "\(sample.source), \(formateador.stringFromDate(sample.startDate))"
-        //cell.imageView?.image = UIImage(named: sample.typeIdentifier! )
-        cell.textLabel!.text = "\(sample.quantity) \(sample.quantityType)"
+        cell.detailTextLabel!.text = "\(sample.source), \(dateFormatter.stringFromDate(sample.startDate))"
+
+        let etiqueta = formatNumberInDecimalStyle(sample.quantity)
+        cell.textLabel!.text = "\(etiqueta) \(sample.quantityType)"
+
         if sample.foundInHealthKit {
             cell.accessoryType = .Checkmark
         } else {
             cell.accessoryType = .None
         }
+        if sample.recordCount == 1 {
+            cell.imageView?.image = UIImage(named: "recordCountFalse")
+        } else {
+            cell.imageView?.image = UIImage(named: "recordCountTrue")
+        }
+        
     }
 
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let sample = (self.fetchedResultsController.objectAtIndexPath(indexPath) as! QuantitySample)
+        //checkForDuplicates([sample])
+        sample.foundInHealthKit = !sample.foundInHealthKit
+        self.actualizarTabla()
+    }
+    
     /*
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
@@ -321,19 +238,31 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     }
     */
 
-    /*
+
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        if segue.identifier == "importThisSamples" {
+            if !checkForDuplicatesPushed {
+                alertUserSearchForDuplicates()
+            }
+            let dvc = segue.destinationViewController as! ImportSamplesViewController
+            dvc.samplesToImport = self.fetchedResultsController.fetchedObjects!
+            dvc.healthStore = self.healthStore
+        }
+        if segue.identifier == "checkThisSamples" {
+            checkForDuplicatesPushed = true
+            let dvc = segue.destinationViewController as! ImportSamplesViewController
+            dvc.samplesToCheck = self.fetchedResultsController.fetchedObjects!
+            dvc.healthStore = self.healthStore
+        }
+
     }
-    */
     
     //MARK: - Notificacion en pantalla
-    
-    //MARK: Notificación por pantalla
     
     func alertUserSearchForDuplicates() {
 
@@ -343,7 +272,8 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         
         let continueAction = UIAlertAction(title: NSLocalizedString("Continue", comment: "Continue"),
             style: .Default , handler: {(alert: UIAlertAction!) in
-                self.importSamples(self.importSamplesButton)
+                self.checkForDuplicatesPushed = true
+                self.performSegueWithIdentifier("importThisSamples", sender: self)
         })
         
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Cancel"),
@@ -354,7 +284,6 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         
         self.presentViewController(alert, animated: true,
             completion: nil)
-        
     }
     
     func notifyUser(msg: String, err: String?) {

@@ -12,6 +12,8 @@ import HealthKit
 
 protocol XMLParserDelegate{
     func parsingWasFinished(xmlParser: XMLParser)
+    func saveElementsParsed(xmlParser: XMLParser)
+    func createBackupFileRegister(XMLParser: XMLParser) -> BackupFile?
 }
 
 class XMLParser: NSObject, NSXMLParserDelegate {
@@ -23,6 +25,18 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     var isValidBackupFile: Bool = false
     var samples:[Dictionary<String,String>] = []
     var processOnlyHeader: Bool = false
+    var startTime: NSDate = NSDate()
+    var endTime: NSDate = NSDate()
+    var coredataBackupFile: BackupFile?
+    
+    let formateador: NSDateFormatter = {
+        var formateadorInterno = NSDateFormatter()
+        formateadorInterno.dateFormat = "yyyyMMddHHmmssZ"
+        return formateadorInterno
+    }()
+    
+    
+    
     
     func startParsingWithContentsOfURL(rssURL: NSURL, fileName: String) {
         let parser = NSXMLParser(contentsOfURL: rssURL)
@@ -32,31 +46,55 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         parser!.parse()
     }
     
+    func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+        if samples.count > 50000 {
+            delegate?.saveElementsParsed(self)
+            samples.removeAll()
+        }
+    }
+    
     func parser(parser: NSXMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, var attributes attributeDict: [String : String]) {
 
-        if elementName == "Record" {
-            if !self.processOnlyHeader {
-                samples.append(attributeDict)
+        if coredataBackupFile != nil {
+            if elementName == "Record" {
+                if !self.processOnlyHeader {
+                    samples.append(attributeDict)
+                } else {
+                    delegate?.parsingWasFinished(self)
+                    parser.abortParsing()
+                }
             }
         }
+        
         if elementName == "HealthData" {
             self.isValidBackupFile = true
         }
         if elementName == "ExportDate" {
-            let formateador = NSDateFormatter()
-            formateador.dateFormat = "yyyyMMddHHmmssZ"
             self.exportDate = formateador.dateFromString(attributeDict["value"]!)
+            if self.exportDate == nil {
+                formateador.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+                self.exportDate = formateador.dateFromString(attributeDict["value"]!)
+            }
             //TODO : Ver que pasa con la fecha en el simulador
-            //self.exportDate = NSDate()
+
         }
+        
+        if coredataBackupFile == nil {
+            if (self.exportDate != nil) && (self.isValidBackupFile)  {
+                coredataBackupFile = delegate?.createBackupFileRegister(self)
+            }
+        }
+        
     }
     
     func parserDidEndDocument(parser: NSXMLParser) {
         if (self.exportDate != nil) && (self.isValidBackupFile)  {
-            delegate?.parsingWasFinished(self)
+            print("Fichero Valido")
         } else {
             print("El fichero no es valido")
         }
+        delegate?.parsingWasFinished(self)
+        delegate?.saveElementsParsed(self)
     }
     
     func parser(parser: NSXMLParser, parseErrorOccurred parseError: NSError) {

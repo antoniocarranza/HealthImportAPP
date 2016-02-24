@@ -26,44 +26,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         let masterNavigationController = splitViewController.viewControllers[0] as! UINavigationController
         let controller = masterNavigationController.topViewController as! MasterViewController
         controller.managedObjectContext = self.managedObjectContext
+        controller.healthStore = self.healthStore
+        controller.applicationDocumentsDirectory = self.applicationDocumentsDirectory
         
         if HKHealthStore.isHealthDataAvailable() {
             print("HealhtKit esta disponible")
         } else {
             print("HealthKit no esta disponible")
         }
-        
-//        let healthStore: HKHealthStore? = {
-//            if HKHealthStore.isHealthDataAvailable() {
-//                return HKHealthStore()
-//            } else {
-//                return nil
-//            }
-//            }()
-//        
-//        let dateOfBirthCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
-//            HKCharacteristicTypeIdentifierDateOfBirth)
-//        
-//        let biologicalSexCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
-//            HKCharacteristicTypeIdentifierBiologicalSex)
-//        
-//        let bloodTypeCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
-//            HKCharacteristicTypeIdentifierBloodType)
-//        
-//        let dataTypesToRead = NSSet(objects:
-//            dateOfBirthCharacteristic!,
-//            biologicalSexCharacteristic!,
-//            bloodTypeCharacteristic!)
-//        
-//        healthStore?.requestAuthorizationToShareTypes(nil,
-//            readTypes: dataTypesToRead as! Set<HKObjectType>,
-//            completion: { (success, error) -> Void in
-//                if success {
-//                    print("success")
-//                } else {
-//                    print(error!.description)
-//                }
-//        })
         
         return true
     }
@@ -96,7 +66,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 
     func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController:UIViewController, ontoPrimaryViewController primaryViewController:UIViewController) -> Bool {
         guard let secondaryAsNavController = secondaryViewController as? UINavigationController else { return false }
-        guard let topAsDetailController = secondaryAsNavController.topViewController as? DetailTableViewController else { return false }
+        guard let topAsDetailController = secondaryAsNavController.topViewController as? SamplesGroupsTableViewController else { return false }
         if topAsDetailController.detailItem == nil {
             // Return true to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
             return true
@@ -167,3 +137,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     }
 
 }
+
+//        let healthStore: HKHealthStore? = {
+//            if HKHealthStore.isHealthDataAvailable() {
+//                return HKHealthStore()
+//            } else {
+//                return nil
+//            }
+//            }()
+//
+//        let dateOfBirthCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
+//            HKCharacteristicTypeIdentifierDateOfBirth)
+//
+//        let biologicalSexCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
+//            HKCharacteristicTypeIdentifierBiologicalSex)
+//
+//        let bloodTypeCharacteristic = HKCharacteristicType.characteristicTypeForIdentifier(
+//            HKCharacteristicTypeIdentifierBloodType)
+//
+//        let dataTypesToRead = NSSet(objects:
+//            dateOfBirthCharacteristic!,
+//            biologicalSexCharacteristic!,
+//            bloodTypeCharacteristic!)
+//
+//        healthStore?.requestAuthorizationToShareTypes(nil,
+//            readTypes: dataTypesToRead as! Set<HKObjectType>,
+//            completion: { (success, error) -> Void in
+//                if success {
+//                    print("success")
+//                } else {
+//                    print(error!.description)
+//                }
+//        })
