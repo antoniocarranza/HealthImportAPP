@@ -19,5 +19,7 @@ extension BackupFile {
     @NSManaged var fileURLWithPath: String?
     @NSManaged var lastImportDate: NSDate?
     @NSManaged var quantitySamples: NSSet?
+    @NSManaged var quantitySamplesCount: Double
+    @NSManaged var permissionsList: String
 
 }

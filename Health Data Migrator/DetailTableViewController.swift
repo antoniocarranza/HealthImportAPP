@@ -85,6 +85,8 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     }
     var _fetchedResultsController: NSFetchedResultsController? = nil
 
+    // MARK: - View
+    
     func configureView() {
         // Update the user interface for the detail item.
     }
@@ -92,9 +94,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
     override func viewWillAppear(animated: Bool) {
         self.actualizarTabla()
         self.navigationController?.setToolbarHidden(false, animated: false)
-        if fetchedResultsController.fetchedObjects?.count < 5000 {
-            self.checkForDuplicatesButton.enabled = true
-        }
+        self.checkForDuplicatesButton.enabled = true
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -252,12 +252,14 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
             let dvc = segue.destinationViewController as! ImportSamplesViewController
             dvc.samplesToImport = self.fetchedResultsController.fetchedObjects!
             dvc.healthStore = self.healthStore
+            dvc.fetchedResultsController = self.fetchedResultsController
         }
         if segue.identifier == "checkThisSamples" {
             checkForDuplicatesPushed = true
             let dvc = segue.destinationViewController as! ImportSamplesViewController
             dvc.samplesToCheck = self.fetchedResultsController.fetchedObjects!
             dvc.healthStore = self.healthStore
+            dvc.fetchedResultsController = self.fetchedResultsController
         }
 
     }

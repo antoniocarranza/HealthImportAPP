@@ -13,9 +13,7 @@ import HealthKit
 // MARK: - Extension
 
 extension String {
-    
     func stringByAppendingPathComponent(path: String) -> String {
-        
         let nsSt = self as NSString
         return nsSt.stringByAppendingPathComponent(path)
     }
@@ -35,10 +33,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var documentsDirectory : String = ""
     var documentsToParse : Int = 0
     var documentsParsed : Int = 0
-    
     var elementsSaved : Int = 0
-    
     var applicationDocumentsDirectory: NSURL?
+    var horaInicio: NSDate = NSDate()
+    
+    let formateador = NSDateFormatter()
     
     @IBOutlet weak var progressBar: UIProgressView!
     
@@ -47,12 +46,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        
         if let split = self.splitViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailTableViewController
         }
-        
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -62,45 +59,31 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         //Asignamos función al pull to refresh y cambiamos el titulo
         self.refreshControl?.addTarget(self, action: "refreshDocumentsFolderFileList:", forControlEvents: UIControlEvents.ValueChanged)
         self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("PullToRefresh", comment: "Pull to Refresh"))
-        
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+        print("La aplicacion ha recibido un memory warning")
     }
 
-    // MARK: - Documents and Parsing
-    
-    func deleteBackupFiles() {
-        let context = self.fetchedResultsController.managedObjectContext
-        
-        //Eliminamos los elementos actuales
-        let request = NSFetchRequest(entityName: "BackupFile")
-        
-        do {
-            var myList = try context.executeFetchRequest(request)
-            for item: AnyObject in myList
-            {
-                context.deleteObject(item as! NSManagedObject)
-            }
-            myList.removeAll(keepCapacity: false)
-            //try context.save()
-        } catch {
-            print("Unresolved error \(error)")
-        }
-    }
+    // MARK: - Documents
     
     func getDocumentsFolderFileList() -> [String] {
         
+        horaInicio = NSDate()
+        print("Hora de inicio del refresco: \(horaInicio)")
+        
         var documentsFolderFileList: [String] = []
         documentsDirectory = paths[0] as String
+        print(documentsDirectory)
         let fileManager: NSFileManager = NSFileManager()
         do {
             let fileList = try fileManager.contentsOfDirectoryAtPath(documentsDirectory)
             for name in fileList {
                 if name.hasSuffix(".xml") {
                     documentsFolderFileList.append(name)
+                    documentsToParse += 1
                 }
             }
             return documentsFolderFileList
@@ -114,16 +97,18 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         print("refreshDocumentsFolderFileList:")
 
-        deleteBackupFiles()
+        UIApplication.sharedApplication().idleTimerDisabled = true
+        print("Modo reposo desactivado")
+        
+        for fetchedObject in self.fetchedResultsController.fetchedObjects! {
+            let backupFile = (fetchedObject as! BackupFile)
+            let backupFileName = backupFile.fileName!
+            deleteBackupFile(backupFileName)
+        }
+        
         documentsParsed = 0
         
         let fileList = getDocumentsFolderFileList()
-        
-        documentsToParse = fileList.count
-        if documentsToParse > 0 {
-            self.tableView.beginUpdates()
-        }
-
         
         for name in fileList {
             let xmlParser: XMLParser = XMLParser()
@@ -138,10 +123,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         if documentsToParse == 0 {
             self.refreshControl!.endRefreshing()
-            
+            UIApplication.sharedApplication().idleTimerDisabled = false
+            print("Modo reposo activado")
         }
-        
     }
+    
+    // MARK: - Parsing and CoreData
     
     func parsingWasFinished(xmlParser: XMLParser) {
         
@@ -150,13 +137,38 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         print("parsingWasFinished:")
         
         documentsParsed += 1
+
+        let context = self.fetchedResultsController.managedObjectContext
+        let backupFile = createBackupFileRegister(xmlParser)
+        backupFile?.quantitySamplesCount = xmlParser.quantitySamplesCount
+        var permissionsList : String = ""
+        for permission in xmlParser.permissionsList {
+            permissionsList += permission + ","
+        }
+        
+        if !permissionsList.isEmpty { permissionsList = permissionsList.substringToIndex(permissionsList.endIndex.predecessor()) }
+        backupFile?.permissionsList = permissionsList
+        
+        do {
+            try context.save()
+            print("numeros de samples en el fichero actualizado a: \(xmlParser.quantitySamplesCount)")
+            print("numero de permisos necesarios: \(xmlParser.permissionsList.count)")
+        } catch {
+            print("Error actualizando el numero de samples o los tipos en el fichero de backup")
+        }
+        
         if documentsParsed == documentsToParse {
             print("Todos los documentos examinados...\(documentsParsed)/\(documentsToParse)")
+            
+            let horaFin : NSDate = NSDate()
+            let diferencia  = horaFin.timeIntervalSinceDate(horaInicio)
 
+            print("Carga finalizada: \(horaFin)")
+            print("Tiempo empleado: \(diferencia)")
+            
             self.refreshControl!.endRefreshing()
-            self.tableView.endUpdates()
+            //self.tableView.endUpdates()
             self.tableView.reloadData()
-
         }
     }
     
@@ -167,25 +179,34 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         let context = self.fetchedResultsController.managedObjectContext
         let entity = self.fetchedResultsController.fetchRequest.entity!
 
+        if xmlParser.coredataBackupFileId != nil {
+            return (context.objectWithID(xmlParser.coredataBackupFileId!) as! BackupFile)
+        }
+        
         if (xmlParser.exportDate != nil) && (xmlParser.isValidBackupFile)  {
-            
-            //self.tableView.beginUpdates()
-            
             let newBackupFile = NSEntityDescription.insertNewObjectForEntityForName(entity.name!, inManagedObjectContext: context) as! BackupFile
-            //newManagedObject.setValue(xmlParser.fileName, forKey: "name")
             newBackupFile.fileURLWithPath = xmlParser.fileURLWithPath!.description
             newBackupFile.fileName = xmlParser.fileName
             newBackupFile.exportDate = xmlParser.exportDate
             newBackupFile.lastImportDate = nil
+            newBackupFile.quantitySamplesCount = 0
+            newBackupFile.permissionsList = ""
             
-            print("Registro Creado: \(newBackupFile.fileName)")
+            do {
+                try context.save()
+                print("Registro Creado: \(newBackupFile.fileName)")
+            } catch {
+                // Replace this implementation with code to handle the error appropriately.
+                // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+                print("Unresolved error \(error)")
+                //abort()
+            }
+            
             return newBackupFile
         } else {
             print("Registro no creado")
             return nil
         }
-        
-        
     }
     
     func saveElementsParsed(xmlParser: XMLParser) {
@@ -193,68 +214,152 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         //Cuando el Parser a leido algunos registros avisa a la vista para guardar los datos en sqlite y liberar memoria
                 
         let context = self.fetchedResultsController.managedObjectContext
-        _ = self.fetchedResultsController.fetchRequest.entity!
+        context.undoManager?.disableUndoRegistration()
+        //let entity = self.fetchedResultsController.fetchRequest.entity!
 
         elementsSaved += xmlParser.samples.count
-        let elementsToSave = xmlParser.samples.count
         
-        print("saveElementsParsed: \(xmlParser.samples.count) samples to save")
-            
+//        dispatch_async(dispatch_get_main_queue(), {
+//            self.title = "\(self.elementsSaved)"
+//        })
+        
+        if xmlParser.coredataBackupFileId != nil {
+            xmlParser.coredataBackupFile =  (context.objectWithID(xmlParser.coredataBackupFileId!) as! BackupFile)
+        }
+
         let formateador = NSDateFormatter()
         formateador.dateFormat = "yyyyMMddHHmmssZ"
-        
-        for sample in xmlParser.samples {
-            let sampleType = sample["type"]
-            if sampleType?.hasPrefix("HKQuantityType") == true {
-                let newSample = NSEntityDescription.insertNewObjectForEntityForName("QuantitySample", inManagedObjectContext: context) as! QuantitySample
-                if sample["source"] != nil {
-                    newSample.source = sample["source"]!
-                } else {
-                    newSample.source = sample["sourceName"]!
-                }
-                if sample["startDate"] != nil {
-                    if formateador.dateFromString(sample["startDate"]!) == nil {
-                        formateador.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+
+        //context.performBlock {
+            
+            autoreleasepool {
+                for sample in xmlParser.samples {
+                    let sampleType = sample["type"]
+                    if sampleType?.hasPrefix("HKQuantityType") == true {
+                        let newSample: QuantitySample = NSEntityDescription.insertNewObjectForEntityForName("QuantitySample", inManagedObjectContext: context) as! QuantitySample
+                        if sample["source"] != nil {
+                            newSample.source = sample["source"]!
+                        } else {
+                            newSample.source = sample["sourceName"]!
+                        }
+                        if sample["startDate"] != nil {
+                            if formateador.dateFromString(sample["startDate"]!) == nil {
+                                formateador.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+                            }
+                            newSample.startDate = formateador.dateFromString(sample["startDate"]!)!
+                        }
+                        if sample["endDate"] != nil {
+                            if formateador.dateFromString(sample["endDate"]!) == nil {
+                                formateador.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+                            }
+                            newSample.endDate = formateador.dateFromString(sample["endDate"]!)!
+                        }
+                        if let tmpUnit = sample["unit"]  {
+                            newSample.quantityType = tmpUnit
+                        }
+                        if sample["value"] != nil {
+                            newSample.quantity = NSString(string: sample["value"]!).doubleValue
+                            //print("CoreData - Muestra de \(sampleType!) guardando el valor: \(newSample.quantity)")
+                        }
+                        if sample["recordCount"] != nil {
+                            newSample.recordCount = NSString(string: sample["recordCount"]!).doubleValue
+                        }
+                        newSample.backupFile = xmlParser.coredataBackupFile!
+                        newSample.typeIdentifier = sampleType!
+                    } else {
+                        //print("CoreData - SampleType not implemented \(sampleType!)")
                     }
-                    newSample.startDate = formateador.dateFromString(sample["startDate"]!)!
                 }
-                if sample["endDate"] != nil {
-                    if formateador.dateFromString(sample["endDate"]!) == nil {
-                        formateador.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-                    }
-                    newSample.endDate = formateador.dateFromString(sample["endDate"]!)!
-                }
-                if let tmpUnit = sample["unit"]  {
-                    newSample.quantityType = tmpUnit
-                }
-                if sample["value"] != nil {
-                    newSample.quantity = NSString(string: sample["value"]!).doubleValue
-                    //print("CoreData - Muestra de \(sampleType!) guardando el valor: \(newSample.quantity)")
-                }
-                if sample["recordCount"] != nil {
-                    newSample.recordCount = NSString(string: sample["recordCount"]!).doubleValue
-                }
-                newSample.backupFile = xmlParser.coredataBackupFile
-                newSample.typeIdentifier = sampleType!
-            } else {
-                print("CoreData - SampleType not implemented \(sampleType!)")
             }
-        }
-        xmlParser.samples.removeAll(keepCapacity: false)
+
+            do {
+                try context.save()
+                print("Total de elementos procesados \(self.elementsSaved)\r")
+                
+            } catch {
+                print("Algo fallo en context.save() de saveElementsParsed()\r\(error)")
+            }
+            context.reset()
+        //}
+    }
+    
+    func deleteBackupFile(backupFileName: String) {
         
-        do {
-            try context.save()
-            print("context saved")
-            print("Elements saved \(elementsToSave)")
-            print("Total Elements procesed \(elementsSaved)")
-        } catch {
-            // Replace this implementation with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            print("Unresolved error \(error)")
-            //abort()
+        let context = self.managedObjectContext!
+        let predicateByFileName = NSPredicate(format: "fileName = %@", backupFileName)
+        
+        if #available(iOS 9.0, *) {
+            print("Borrando el fichero \"\(backupFileName)\" usando iOS 9 NSBatchDeleteRequest.")
+            let fetchRequest = NSFetchRequest(entityName: "BackupFile")
+            fetchRequest.predicate = predicateByFileName
+            let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            batchDeleteRequest.resultType = .ResultTypeCount
+            
+            do {
+                // Execute Batch Request
+                let batchDeleteResult = try context.executeRequest(batchDeleteRequest) as! NSBatchDeleteResult
+                
+                print("El borrado por lotes ha eliminado \"\(batchDeleteResult.result!)\" registros.")
+                
+                // Reset Managed Object Context
+                context.reset()
+                
+                // Perform Fetch
+                try self.fetchedResultsController.performFetch()
+                
+                // Reload Table View
+                tableView.reloadData()
+                
+            } catch {
+                let updateError = error as NSError
+                print("\(updateError), \(updateError.userInfo)")
+            }
+        } else {
+            print("Borrando el fichero \(backupFileName) usando coredata loop.")
+            let fetchRequest = NSFetchRequest(entityName: "QuantitySample")
+            fetchRequest.predicate = predicateByFileName
+            fetchRequest.fetchLimit = 1
+            do {
+                while try context.executeFetchRequest(fetchRequest).count > 0 {
+                    deleteData("QuantitySample",backupFile: backupFileName)
+                }
+            } catch {
+                print("Algo fue mal...")
+            }
+            deleteData("BackupFile",backupFile: backupFileName)
         }
     }
     
+    func deleteData(entity: String, backupFile: String) {
+        let context = self.managedObjectContext!
+        let objectsToDeleteRequest = NSFetchRequest(entityName: entity)
+
+        if entity == "QuantitySample" {
+            let predicateByFileName = NSPredicate(format: "backupFile = %@", backupFile)
+            objectsToDeleteRequest.predicate = predicateByFileName
+        } else {
+            let predicateByFileName = NSPredicate(format: "fileName = %@", backupFile)
+            objectsToDeleteRequest.predicate = predicateByFileName
+        }
+
+        objectsToDeleteRequest.includesPropertyValues = false
+        objectsToDeleteRequest.fetchBatchSize = 100000
+        objectsToDeleteRequest.fetchLimit = 100000
+        
+        do {
+            let objectsToDelete = try context.executeFetchRequest(objectsToDeleteRequest)
+            if let _ = objectsToDelete.last as! NSManagedObject? {
+                for object in objectsToDelete {
+                    let managedObject = (object as! NSManagedObject)
+                    context.deleteObject(managedObject)
+                }
+                try context.save()
+                context.reset()
+            }
+        } catch {
+            print("Algo fallo en context.save() de deleteData()")
+        }
+    }
     
     // MARK: - Segues
     
@@ -273,26 +378,29 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
     
     // Actualizacción de permisos
+
     func pedirPermisos(backupFile: BackupFile) {
         
         if HKHealthStore.isHealthDataAvailable() {
-            print("HealhtKit esta disponible. Solicitando permisos...")
-            //TODO : Sería conveniente trasladarlo a los tipos detectados en el fichero a importar
-            //Autorización para leer/Escribir ciertos tipos
-            
-            if backupFile.quantitySamples?.count > 0 {
-                var hkQuantitySampleTypes: Set<HKSampleType> = []
-                for quantitySample in backupFile.quantitySamples! {
-                    let hkQuantitySampleType = (quantitySample as! QuantitySample)
-                    hkQuantitySampleTypes.insert(HKObjectType.quantityTypeForIdentifier(hkQuantitySampleType.typeIdentifier)!)
-                }
-                if hkQuantitySampleTypes.count > 0 {
-                    self.healthStore!.requestAuthorizationToShareTypes(hkQuantitySampleTypes, readTypes: hkQuantitySampleTypes, completion: {
-                        (success, error) -> Void in
-                        print("Petición de permisos para \(hkQuantitySampleTypes)\r con resultado de \(success), Error: \(error)")
-                    })
+            var hkQuantitySampleTypes: Set<HKSampleType> = []
+            let permissionsList = backupFile.permissionsList.componentsSeparatedByString(",")
+            if permissionsList.count == 0 {
+                print("No hay permisos que solicitar")
+                return
+            }
+            for permission in permissionsList {
+                let typeToInsert = HKObjectType.quantityTypeForIdentifier(permission)
+                if typeToInsert != nil {
+                    hkQuantitySampleTypes.insert(typeToInsert!)
                 }
             }
+            if hkQuantitySampleTypes.count > 0 {
+                self.healthStore!.requestAuthorizationToShareTypes(hkQuantitySampleTypes, readTypes: hkQuantitySampleTypes, completion: {
+                    (success, error) -> Void in
+                    print("Petición de permisos para \(permissionsList)\r\rRealizada con resultado de \(success), Error: \(error)")
+                })
+            }
+            hkQuantitySampleTypes.removeAll(keepCapacity: false)
         } else {
             print("HealthKit no esta disponible")
         }
@@ -321,7 +429,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionInfo = self.fetchedResultsController.sections![section]
         return sectionInfo.numberOfObjects
-
     }
 
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -350,7 +457,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
             do {
                 try fileManager.removeItemAtPath(filePath)
-                context.deleteObject(self.fetchedResultsController.objectAtIndexPath(indexPath) as! NSManagedObject)
+                let backupFile = self.fetchedResultsController.objectAtIndexPath(indexPath) as! BackupFile
+                deleteBackupFile(backupFile.fileName!)
             } catch let error as NSError {
                 print(error)
             }
@@ -358,7 +466,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             do {
                 try context.save()
                 //Todo: Borrar el fichero del disco
-                
             } catch {
                 // Replace this implementation with code to handle the error appropriately.
                 // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
@@ -369,20 +476,20 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
-        let formateador = NSDateFormatter()
+
         formateador.dateStyle = .LongStyle
         formateador.timeStyle = .ShortStyle
         
         let samples = NSLocalizedString("Samples", comment: "Samples")
         let exportedOn = NSLocalizedString("ExportedOn", comment: "Exported on")
         let backupFile = (self.fetchedResultsController.objectAtIndexPath(indexPath) as! BackupFile)
-        let samplesCount = formatNumberInDecimalStyle(backupFile.quantitySamples!.count)
+        //let samplesCount = formatNumberInDecimalStyle(backupFile.quantitySamples!.count)
+        let samplesCount = formatNumberInDecimalStyle(backupFile.quantitySamplesCount)
         let exportDate = formateador.stringFromDate(backupFile.exportDate!)
+        //let exportDate = "--/--/--"
         let fileName = backupFile.fileName
         cell.textLabel!.text = fileName
         cell.detailTextLabel!.text = "\(samplesCount) \(samples)\r\(exportedOn) \(exportDate)"
-        //cell.imageView!.frame = CGRectMake(0, 0, 32, 32)
-        
     }
 
     // MARK: - Fetched results controller
@@ -396,6 +503,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         // Edit the entity name as appropriate.
         let entity = NSEntityDescription.entityForName("BackupFile", inManagedObjectContext: self.managedObjectContext!)
         fetchRequest.entity = entity
+        fetchRequest.includesPropertyValues = false
+        fetchRequest.includesSubentities = false
         
         // Set the batch size to a suitable number.
         fetchRequest.fetchBatchSize = 20
@@ -407,7 +516,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         // Edit the section name key path and cache name if appropriate.
         // nil for section name key path means "no sections".
-        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath: nil, cacheName: "Master")
+//        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath: nil, cacheName: "Master")
+        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath: nil, cacheName: nil)
         aFetchedResultsController.delegate = self
         _fetchedResultsController = aFetchedResultsController
         
@@ -421,23 +531,24 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
         
         return _fetchedResultsController!
-    }    
+    }
+    
     var _fetchedResultsController: NSFetchedResultsController? = nil
 
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
         self.tableView.beginUpdates()
     }
 
-    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
-        switch type {
-            case .Insert:
-                self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-            case .Delete:
-                self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-            default:
-                return
-        }
-    }
+//    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
+//        switch type {
+//            case .Insert:
+//                self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
+//            case .Delete:
+//                self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
+//            default:
+//                return
+//        }
+//    }
 
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         switch type {
@@ -467,6 +578,3 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
 
 }
-
-
-

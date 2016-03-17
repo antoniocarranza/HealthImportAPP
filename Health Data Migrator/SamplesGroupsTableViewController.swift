@@ -215,12 +215,14 @@ class SamplesGroupsTableViewController: UITableViewController, NSFetchedResultsC
             dvc.fetchedResultsController = self.fetchedResultsController
             dvc.samplesToImport = self.fetchedResultsController.fetchedObjects!
             dvc.healthStore = self.healthStore
+            dvc.fetchedResultsController = self.fetchedResultsController
         }
         if segue.identifier == "checkAllSamples" {
             let dvc = segue.destinationViewController as! ImportSamplesViewController
             dvc.samplesToCheck = self.fetchedResultsController.fetchedObjects!
             dvc.fetchedResultsController = self.fetchedResultsController
             dvc.healthStore = self.healthStore
+            dvc.fetchedResultsController = self.fetchedResultsController
             checkForDuplicatesPushed = true
             print(dvc)
         }

@@ -28,15 +28,16 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     var startTime: NSDate = NSDate()
     var endTime: NSDate = NSDate()
     var coredataBackupFile: BackupFile?
+    var coredataBackupFileId: NSManagedObjectID?
+    var quantitySamplesCount: Double = 0
+    var permissionsList = Set<String>()
+
     
     let formateador: NSDateFormatter = {
         var formateadorInterno = NSDateFormatter()
         formateadorInterno.dateFormat = "yyyyMMddHHmmssZ"
         return formateadorInterno
     }()
-    
-    
-    
     
     func startParsingWithContentsOfURL(rssURL: NSURL, fileName: String) {
         let parser = NSXMLParser(contentsOfURL: rssURL)
@@ -47,7 +48,7 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     }
     
     func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if samples.count > 50000 {
+        if samples.count == 25000 {
             delegate?.saveElementsParsed(self)
             samples.removeAll()
         }
@@ -57,8 +58,10 @@ class XMLParser: NSObject, NSXMLParserDelegate {
 
         if coredataBackupFile != nil {
             if elementName == "Record" {
+                quantitySamplesCount += 1
                 if !self.processOnlyHeader {
                     samples.append(attributeDict)
+                    permissionsList.insert(attributeDict["type"]!)
                 } else {
                     delegate?.parsingWasFinished(self)
                     parser.abortParsing()
@@ -82,6 +85,7 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         if coredataBackupFile == nil {
             if (self.exportDate != nil) && (self.isValidBackupFile)  {
                 coredataBackupFile = delegate?.createBackupFileRegister(self)
+                coredataBackupFileId = coredataBackupFile!.objectID
             }
         }
         
@@ -93,8 +97,8 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         } else {
             print("El fichero no es valido")
         }
-        delegate?.parsingWasFinished(self)
         delegate?.saveElementsParsed(self)
+        delegate?.parsingWasFinished(self)
     }
     
     func parser(parser: NSXMLParser, parseErrorOccurred parseError: NSError) {

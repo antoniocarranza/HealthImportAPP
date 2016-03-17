@@ -1,0 +1,51 @@
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "02M-Mj-ieC"; */
+"02M-Mj-ieC.text" = "Detail";
+
+/* Class = "UIBarButtonItem"; title = "Import This Samples"; ObjectID = "19g-Iq-7bI"; */
+"19g-Iq-7bI.title" = "Import This Samples";
+
+/* Class = "UITableViewController"; title = "Master"; ObjectID = "7bK-jq-Zjz"; */
+"7bK-jq-Zjz.title" = "Master";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "Arm-wq-HPj"; */
+"Arm-wq-HPj.text" = "Title";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "CIQ-5z-wzs"; */
+"CIQ-5z-wzs.text" = "Detail";
+
+/* Class = "UILabel"; text = "..."; ObjectID = "PZr-wu-l1f"; */
+"PZr-wu-l1f.text" = "...";
+
+/* Class = "UINavigationController"; title = "Master"; ObjectID = "RMx-3f-FxP"; */
+"RMx-3f-FxP.title" = "Master";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "RtG-4I-J0G"; */
+"RtG-4I-J0G.text" = "Title";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "Tgm-10-ryp"; */
+"Tgm-10-ryp.text" = "Title";
+
+/* Class = "UIBarButtonItem"; title = "Import All Samples"; ObjectID = "W6k-iR-omA"; */
+"W6k-iR-omA.title" = "Import All Samples";
+
+/* Class = "UINavigationItem"; title = "Backup's"; ObjectID = "Zdf-7t-Un8"; */
+"Zdf-7t-Un8.title" = "Backup's";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "d6G-ub-etf"; */
+"d6G-ub-etf.text" = "Detail";
+
+/* Class = "UINavigationItem"; title = "Data"; ObjectID = "gsa-d9-chM"; */
+"gsa-d9-chM.title" = "Data";
+
+/* Class = "UILabel"; text = "..."; ObjectID = "h5q-Ct-qOk"; */
+"h5q-Ct-qOk.text" = "...";
+
+/* Class = "UIButton"; normalTitle = "Close"; ObjectID = "kRr-4o-Q7w"; */
+"kRr-4o-Q7w.normalTitle" = "Close";
+
+/* Class = "UIBarButtonItem"; title = "Check for Duplicates"; ObjectID = "s4u-NT-QuJ"; */
+"s4u-NT-QuJ.title" = "Check for Duplicates";
+
+/* Class = "UIBarButtonItem"; title = "Check for Duplicates"; ObjectID = "xOg-a8-9Z2"; */
+"xOg-a8-9Z2.title" = "Check for Duplicates";
