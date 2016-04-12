@@ -15,7 +15,7 @@ import CoreData
 extension BackupFile {
 
     @NSManaged var exportDate: NSDate?
-    @NSManaged var fileName: String?
+    @NSManaged var fileName: String
     @NSManaged var fileURLWithPath: String?
     @NSManaged var lastImportDate: NSDate?
     @NSManaged var quantitySamples: NSSet?

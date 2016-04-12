@@ -10,15 +10,17 @@ import UIKit
 import CoreData
 import HealthKit
 
+
 protocol XMLParserDelegate{
     func parsingWasFinished(xmlParser: XMLParser)
     func saveElementsParsed(xmlParser: XMLParser)
     func createBackupFileRegister(XMLParser: XMLParser) -> BackupFile?
+    func errorParsing(xmlParser: XMLParser, error: NSError)
 }
 
 class XMLParser: NSObject, NSXMLParserDelegate {
 
-    var fileName: String?
+    var fileName: String = ""
     var exportDate: NSDate?
     var fileURLWithPath: NSURL?
     var delegate: XMLParserDelegate?
@@ -60,8 +62,10 @@ class XMLParser: NSObject, NSXMLParserDelegate {
             if elementName == "Record" {
                 quantitySamplesCount += 1
                 if !self.processOnlyHeader {
-                    samples.append(attributeDict)
-                    permissionsList.insert(attributeDict["type"]!)
+                    if attributeDict["type"] != "HKQuantityTypeIdentifierNikeFuel" && attributeDict["type"] != "HKQuantityTypeIdentifierAppleExerciseTime" {
+                        samples.append(attributeDict)
+                        permissionsList.insert(attributeDict["type"]!)
+                    }
                 } else {
                     delegate?.parsingWasFinished(self)
                     parser.abortParsing()
@@ -93,20 +97,28 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     
     func parserDidEndDocument(parser: NSXMLParser) {
         if (self.exportDate != nil) && (self.isValidBackupFile)  {
-            print("Fichero Valido")
+            log.debug("Fichero Valido")
         } else {
-            print("El fichero no es valido")
+            log.debug("El fichero no es valido")
         }
         delegate?.saveElementsParsed(self)
         delegate?.parsingWasFinished(self)
     }
     
     func parser(parser: NSXMLParser, parseErrorOccurred parseError: NSError) {
-        print(parseError.description)
+        log.error("Error de proceso en xmlParser: \(parseError.description)")
+        log.error(parseError.description)
+        delegate?.saveElementsParsed(self)
+        delegate?.parsingWasFinished(self)
+        delegate?.errorParsing(self, error: parseError)
+        
     }
     
     func parser(parser: NSXMLParser, validationErrorOccurred validationError: NSError) {
-        print(validationError.description)
+        log.error("Error de validación en xmlParser \(validationError.description)")
+        delegate?.errorParsing(self, error: validationError)
     }
+    
+
     
 }

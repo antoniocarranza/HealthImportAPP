@@ -10,6 +10,7 @@ import UIKit
 import CoreData
 import HealthKit
 
+
 class SamplesGroupsTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
 
     @IBOutlet weak var checkForDuplicatesButton: UIBarButtonItem!
@@ -105,7 +106,7 @@ class SamplesGroupsTableViewController: UITableViewController, NSFetchedResultsC
                     cell.imageView?.image = UIImage(named: imageName)
                 } else {
                     cell.imageView?.image = UIImage(named: "notFoundImage")
-                    print(currentSection.name)
+                    log.debug(currentSection.name)
                 }
             }
         }
@@ -156,7 +157,7 @@ class SamplesGroupsTableViewController: UITableViewController, NSFetchedResultsC
         } catch {
             // Replace this implementation with code to handle the error appropriately.
             // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            //print("Unresolved error \(error), \(error.userInfo)")
+            //log.error("Unresolved error \(error), \(error.userInfo)")
             abort()
         }
         
@@ -224,7 +225,7 @@ class SamplesGroupsTableViewController: UITableViewController, NSFetchedResultsC
             dvc.healthStore = self.healthStore
             dvc.fetchedResultsController = self.fetchedResultsController
             checkForDuplicatesPushed = true
-            print(dvc)
+            log.debug(dvc.description)
         }
         
         if segue.identifier == "showSamples" {

@@ -10,6 +10,7 @@ import UIKit
 import CoreData
 import HealthKit
 
+
 class ImportSamplesViewController: UIViewController {
 
     
@@ -18,7 +19,7 @@ class ImportSamplesViewController: UIViewController {
     @IBOutlet weak var progressBar: UIProgressView!
     @IBOutlet weak var closeButton: UIButton!
     @IBAction func closeButtonAction(sender: UIButton) {
-        self.dismissViewControllerAnimated(true, completion: {print("Closed \(self)")})
+        self.dismissViewControllerAnimated(true, completion: {log.debug("Closed \(self)")})
     }
     
     var lastSearchDuplatesSamplesFound: Int = 0
@@ -30,12 +31,12 @@ class ImportSamplesViewController: UIViewController {
     
     var samplesToImport: [AnyObject] = [] {
         didSet  {
-            print("SamplesToImport didSet: \(samplesToImport.count)")
+            log.debug("SamplesToImport didSet: \(samplesToImport.count)")
         }
     }
     var samplesToCheck: [AnyObject] = [] {
         didSet {
-            print("samplesToCheck didSet: \(samplesToCheck.count)")
+            log.debug("samplesToCheck didSet: \(samplesToCheck.count)")
         }
     }
     
@@ -98,10 +99,10 @@ class ImportSamplesViewController: UIViewController {
         let totalQueries = quantitySamples.count
         var totalQueriesExecuted = 0
         
-        print("Buscando duplicados...")
+        log.debug("Buscando duplicados...")
         
         UIApplication.sharedApplication().idleTimerDisabled = true
-        print("Modo reposo desactivado")
+        log.debug("Modo reposo desactivado")
         
         dispatch_async(GlobalUserInitiatedQueue) {
             //[unowned self] in
@@ -127,7 +128,7 @@ class ImportSamplesViewController: UIViewController {
                             
                             if (error != nil) {
                                 dispatch_async(GlobalMainQueue) {
-                                    print(error)
+                                    log.error((error?.description)!)
                                     return
                                 }
                             }
@@ -142,17 +143,17 @@ class ImportSamplesViewController: UIViewController {
                             }
                             
                             if totalQueriesCount == totalQueries {
-                                print("Busqueda finalizada")
-                                print(self.lastSearchDuplatesSamplesFound)
+                                log.debug("Busqueda finalizada")
+                                log.debug(String(self.lastSearchDuplatesSamplesFound))
                                 
                                 do {
                                     try context.save()
                                     context.reset()
-                                    print("context saved")
+                                    log.debug("context saved")
                                 } catch {
                                     // Replace this implementation with code to handle the error appropriately.
                                     // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                                    print("Unresolved error \(error)")
+                                    log.error("Unresolved error \(error)")
                                     //abort()
                                 }
                                 
@@ -161,12 +162,13 @@ class ImportSamplesViewController: UIViewController {
                                     self.importSamplesLabel.text = String(format: NSLocalizedString("CheckForDuplicatesFinished", comment: "La Busqueda de duplicados finalizo"), formatNumberInDecimalStyle(self.lastSearchDuplatesSamplesFound))
                                     self.closeButton.hidden = false
                                     UIApplication.sharedApplication().idleTimerDisabled = false
-                                    print("Modo reposo activado")
+                                    log.debug("Modo reposo activado")
                                 }
                             }
                             
                         })
                         
+                        log.debug(hkQuery.debugDescription)
                         self.healthStore!.executeQuery(hkQuery)
                         totalQueriesExecuted += 1
                         
@@ -178,17 +180,17 @@ class ImportSamplesViewController: UIViewController {
 
                             while totalQueriesExecuted - totalQueriesCount != 0{
                                 sleep(1)
-                                print("Queries pending \(totalQueriesExecuted - totalQueriesCount)")
+                                log.debug("Queries pending \(totalQueriesExecuted - totalQueriesCount)")
                             }
 
                             do {
                                 try context.save()
                                 context.reset()
-                                print("context saved")
+                                log.debug("context saved")
                             } catch {
                                 // Replace this implementation with code to handle the error appropriately.
                                 // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                                print("Unresolved error \(error)")
+                                log.error("Unresolved error \(error)")
                                 //abort()
                             }
                             dispatch_async(GlobalMainQueue) {
@@ -200,8 +202,8 @@ class ImportSamplesViewController: UIViewController {
                         
 //                        while totalQueriesExecuted - totalQueriesCount > 350 {
 //                            sleep(1)
-//                            print("\(NSDate()) - Ejecutadas: \(totalQueriesExecuted)")
-//                            print("\(NSDate()) - Pendientes: \(totalQueriesExecuted - totalQueriesCount)")
+//                            log.debug("\(NSDate()) - Ejecutadas: \(totalQueriesExecuted)")
+//                            log.debug("\(NSDate()) - Pendientes: \(totalQueriesExecuted - totalQueriesCount)")
 //                        }
                     }
                 }
@@ -213,10 +215,10 @@ class ImportSamplesViewController: UIViewController {
     }
 
     func importThisSamples(samples: [AnyObject]) {
-        print("importThisSample...")
+        log.debug("importThisSample...")
         
         UIApplication.sharedApplication().idleTimerDisabled = true
-        print("Modo reposo desactivado")
+        log.debug("Modo reposo desactivado")
         
         closeButton.setAttributedTitle(NSAttributedString(string: NSLocalizedString("Close", comment: "Close")), forState: .Normal)
         let msg =   NSLocalizedString("CreatingSamples", comment: "CreatingSamples")
@@ -237,12 +239,13 @@ class ImportSamplesViewController: UIViewController {
         var pendingSamplesCounter : Int = totalSamplesCounter - savedSamplesCounter
         
         var continueLoop: Bool = true
-        
+        var contador: Int = 0
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
             
             autoreleasepool{
                 for item in samples {
                     autoreleasepool{
+                        contador += 1
                         let sample = (item as! QuantitySample)
                         
                         valor = valor + incremento
@@ -250,13 +253,13 @@ class ImportSamplesViewController: UIViewController {
                             self.progressBar.setProgress(valor, animated: isBarAnimated)
                         })
                         
-                        let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier)
+                        let type = HKObjectType.quantityTypeForIdentifier(sample.typeIdentifier)!
                         let unit = HKUnit(fromString: sample.quantityType)
                         
                         let value = sample.quantity
                         let quantity = HKQuantity(unit: unit, doubleValue: value)
                         let metadata  = [HKMetadataKeyWasUserEntered:true]
-                        let hkSample = HKQuantitySample(type: type!, quantity: quantity, startDate: sample.startDate, endDate: sample.endDate, metadata: metadata)
+                        let hkSample = HKQuantitySample(type: type, quantity: quantity, startDate: sample.startDate, endDate: sample.endDate, metadata: metadata)
                         
                         if sample.foundInHealthKit == false {
                             samplesSet.append(hkSample)
@@ -267,23 +270,26 @@ class ImportSamplesViewController: UIViewController {
                             continueLoop = false
                             savedSamplesCounter += samplesSet.count
                             pendingSamplesCounter = totalSamplesCounter - savedSamplesCounter
-                            print(savedSamplesCounter)
+                            log.debug(String(savedSamplesCounter))
                             dispatch_async(GlobalMainQueue) {
                                 self.importSamplesLabel.text = NSLocalizedString("Waiting", comment: "Waiting")
                             }
                             self.healthStore!.saveObjects(samplesSet, withCompletion: { (success, error) -> Void in
+                                
                                 if error != nil {
-                                    print("Errores, terminó la importación con estado \(success)")
-                                    print("Error: Algo falló con la importación!!! \(error)")
+                                    log.debug("Errores, terminó la importación con estado \(success)")
+                                    log.error("Error: Algo falló con la importación!!! \(error)")
                                     dispatch_async(GlobalMainQueue) {
                                         self.importSamplesLabel.text = NSLocalizedString("ImportError", comment: "Something were wrong. sorry")
+                                        self.notifyUser(NSLocalizedString("ImportError", comment: "Something were wrong. sorry"), err: error?.description)
+                                        log.debug(samplesSet.debugDescription)
                                         self.closeButton.hidden = false
                                         UIApplication.sharedApplication().idleTimerDisabled = false
-                                        print("Modo reposo activado")
+                                        log.debug("Modo reposo activado")
                                     }
                                     return
                                 }
-                                
+                                                                
                                 samplesSet.removeAll()
                                 
                                 if success {
@@ -293,12 +299,12 @@ class ImportSamplesViewController: UIViewController {
                                     
                                     do {
                                         try context.save()
-                                        context.reset()
-                                        print("context saved")
+                                        //context.reset()
+                                        log.debug("context saved")
                                     } catch {
                                         // Replace this implementation with code to handle the error appropriately.
                                         // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                                        print("Unresolved error \(error)")
+                                        log.error("Unresolved error \(error)")
                                         //abort()
                                     }
                                     
@@ -312,11 +318,14 @@ class ImportSamplesViewController: UIViewController {
                                 } else {
                                     dispatch_async(GlobalMainQueue) {
                                         self.importSamplesLabel.text = NSLocalizedString("ImportError", comment: "Something were wrong. please contact support.")
+                                        
+                                        self.notifyUser(NSLocalizedString("ImportError", comment: "Something were wrong. sorry"), err: error?.description)
+                                        
                                         self.closeButton.hidden = false
                                         UIApplication.sharedApplication().idleTimerDisabled = false
-                                        print("Modo reposo activado")
+                                        log.debug("Modo reposo activado")
                                     }
-                                    print("Error: Algo falló con la importación pero el sistema no notifico error!!!")
+                                    log.error("Error: Algo falló con la importación pero el sistema no notifico error!!!")
                                 }
                             })
                         }
@@ -333,7 +342,7 @@ class ImportSamplesViewController: UIViewController {
                 }
             }
 
-            print("Waiting to finish...")
+            log.debug("Waiting to finish...")
             while continueLoop == false {
                 sleep(1)
                 
@@ -345,12 +354,28 @@ class ImportSamplesViewController: UIViewController {
                 self.importSamplesLabel.text = userInfo
                 self.closeButton.hidden = false
                 UIApplication.sharedApplication().idleTimerDisabled = false
-                print("Modo reposo activado")
+                log.debug("Modo reposo activado")
             }
             
-            context.reset()
+            //context.reset()
             
         })
     }
     
+    func notifyUser(msg: String, err: String?) {
+        let alert = UIAlertController(title: msg,
+                                      message: err,
+                                      preferredStyle: UIAlertControllerStyle.Alert)
+        
+        let continueAction = UIAlertAction(title: "OK",
+                                           style: .Default, handler: nil)
+        
+        alert.addAction(continueAction)
+        
+        self.presentViewController(alert, animated: true,
+                                   completion: nil)
+        
+        log.debug(msg)
+        log.error(err.debugDescription)
+    }
 }

@@ -10,6 +10,9 @@ import UIKit
 import CoreData
 import HealthKit
 
+
+let log = XCGLogger.defaultInstance()
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
 
@@ -29,11 +32,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         controller.healthStore = self.healthStore
         controller.applicationDocumentsDirectory = self.applicationDocumentsDirectory
         
+        var paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        let logPath: String  = (paths[0] as String).stringByAppendingPathComponent("HealthImport.log.txt")
+        print(logPath)
+        log.setup(.Debug, showThreadName: true, showLogLevel: true, showFileNames: true, showLineNumbers: true, writeToFile: logPath, fileLogLevel: .Debug)
+        
         if HKHealthStore.isHealthDataAvailable() {
-            print("HealhtKit esta disponible")
+            log.verbose("HealhtKit esta disponible")
         } else {
-            print("HealthKit no esta disponible")
+            log.error("HealthKit no esta disponible")
         }
+        
         
         return true
     }
@@ -105,7 +114,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             let wrappedError = NSError(domain: "YOUR_ERROR_DOMAIN", code: 9999, userInfo: dict)
             // Replace this with code to handle the error appropriately.
             // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            NSLog("Unresolved error \(wrappedError), \(wrappedError.userInfo)")
+            log.error("Unresolved error \(wrappedError), \(wrappedError.userInfo)")
             abort()
         }
         
@@ -131,13 +140,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
                 // Replace this implementation with code to handle the error appropriately.
                 // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
                 let nserror = error as NSError
-                NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
+                log.error("Unresolved error \(nserror), \(nserror.userInfo)")
                 abort()
             }
         }
     }
 
 }
+
 
 //        let healthStore: HKHealthStore? = {
 //            if HKHealthStore.isHealthDataAvailable() {
@@ -165,8 +175,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 //            readTypes: dataTypesToRead as! Set<HKObjectType>,
 //            completion: { (success, error) -> Void in
 //                if success {
-//                    print("success")
+//                    log.debug("success")
 //                } else {
-//                    print(error!.description)
+//                    log.debug(error!.description)
 //                }
 //        })
