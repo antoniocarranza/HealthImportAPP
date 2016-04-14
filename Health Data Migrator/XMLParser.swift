@@ -62,14 +62,13 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         if elementName == "HealthData" {
             self.isValidBackupFile = true
         }
+        
         if elementName == "ExportDate" {
             self.exportDate = formateador.dateFromString(attributeDict["value"]!)
             if self.exportDate == nil {
                 formateador.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
                 self.exportDate = formateador.dateFromString(attributeDict["value"]!)
             }
-            //TODO : Ver que pasa con la fecha en el simulador
-            
         }
         
         if coredataBackupFile == nil {
@@ -78,7 +77,6 @@ class XMLParser: NSObject, NSXMLParserDelegate {
                 coredataBackupFileId = coredataBackupFile!.objectID
             }
         }
-        
     }
     
     func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
@@ -110,7 +108,6 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         delegate?.saveElementsParsed(self)
         delegate?.parsingWasFinished(self)
         delegate?.errorParsing(self, error: parseError)
-        
     }
 }
 
