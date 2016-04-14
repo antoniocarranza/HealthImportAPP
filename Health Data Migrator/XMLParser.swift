@@ -19,7 +19,7 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     var exportDate: NSDate?                         // Fecha de exportación del XML
     var fileURLWithPath: NSURL?                     // Ubicación en disco del XML
     
-    var isValidBackupFile: Bool = false             // TODO: Si tengo un elemento llamado HealthData y tengo una fecha de exportación valida es un fichero valido
+    var isValidBackupFile: Bool = false             // Si tengo un elemento llamado HealthData y tengo una fecha de exportación valida es un fichero valido
     var samples:[Dictionary<String,String>] = []    // Samples encontrados, un array de diccionario, esto podría ser un struc
     var permissionsList = Set<String>()             // Lista de permisos necesarios para importar este XML
     
@@ -112,7 +112,8 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         delegate?.errorParsing(self, error: parseError)
         
     }
-    
-
-    
 }
+
+// TODO: Debiese tener un inicializador y constantes en fileName, fileURLWithPath, startTime.
+// TODO: isValidBackupFile debiese contamplar fecha de exportación y que haya existido un elemento llamado HealthData y que tenga registros
+
