@@ -118,7 +118,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             let fileURLWithPath: String = documentsDirectory.stringByAppendingPathComponent(name)
             log.debug("Realizando el parsing a \(fileURLWithPath)")
             xmlParser.delegate = self
-            xmlParser.processOnlyHeader = false
             xmlParser.startParsingWithContentsOfURL(NSURL(fileURLWithPath: fileURLWithPath), fileName: name)
         }
         self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("PullToRefresh", comment: "Pull to Refresh"))

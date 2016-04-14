@@ -10,65 +10,51 @@ import UIKit
 import CoreData
 import HealthKit
 
-
-protocol XMLParserDelegate{
-    func parsingWasFinished(xmlParser: XMLParser)
-    func saveElementsParsed(xmlParser: XMLParser)
-    func createBackupFileRegister(XMLParser: XMLParser) -> BackupFile?
-    func errorParsing(xmlParser: XMLParser, error: NSError)
-}
-
+// MARK: Parseador
 class XMLParser: NSObject, NSXMLParserDelegate {
 
-    var fileName: String = ""
-    var exportDate: NSDate?
-    var fileURLWithPath: NSURL?
+    // MARK: Propiedades
     var delegate: XMLParserDelegate?
-    var isValidBackupFile: Bool = false
-    var samples:[Dictionary<String,String>] = []
-    var processOnlyHeader: Bool = false
-    var startTime: NSDate = NSDate()
-    var endTime: NSDate = NSDate()
-    var coredataBackupFile: BackupFile?
-    var coredataBackupFileId: NSManagedObjectID?
-    var quantitySamplesCount: Double = 0
-    var permissionsList = Set<String>()
-
+    var fileName: String = ""                       // Nombre del archivo que se mostrará al usuario
+    var exportDate: NSDate?                         // Fecha de exportación del XML
+    var fileURLWithPath: NSURL?                     // Ubicación en disco del XML
     
+    var isValidBackupFile: Bool = false             // TODO: Si tengo un elemento llamado HealthData y tengo una fecha de exportación valida es un fichero valido
+    var samples:[Dictionary<String,String>] = []    // Samples encontrados, un array de diccionario, esto podría ser un struc
+    var permissionsList = Set<String>()             // Lista de permisos necesarios para importar este XML
+    
+    let startTime: NSDate = NSDate()                // Fecha y hora en la que se inicia el procesamiento del documento
+    var endTime: NSDate = NSDate()                  // Fecha y hora en la que se termina el procesamiento del documento
+    
+    var coredataBackupFile: BackupFile?             // Nombre del fichero de copia en coredata
+    var coredataBackupFileId: NSManagedObjectID?    // Identificador del fichero de copia en coredata
+    var quantitySamplesCount: Double = 0            // Contador de Samples
+    
+    // MARK: Formateador de fechas
     let formateador: NSDateFormatter = {
         var formateadorInterno = NSDateFormatter()
         formateadorInterno.dateFormat = "yyyyMMddHHmmssZ"
         return formateadorInterno
     }()
     
-    func startParsingWithContentsOfURL(rssURL: NSURL, fileName: String) {
-        let parser = NSXMLParser(contentsOfURL: rssURL)
+    // MARK: Detección de elementos
+    
+    func startParsingWithContentsOfURL(fileURLWithPath: NSURL, fileName: String) {
+        let parser = NSXMLParser(contentsOfURL: fileURLWithPath)
         self.fileName = fileName
-        self.fileURLWithPath = rssURL
+        self.fileURLWithPath = fileURLWithPath
         parser?.delegate = self
         parser!.parse()
     }
     
-    func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if samples.count == 25000 {
-            delegate?.saveElementsParsed(self)
-            samples.removeAll()
-        }
-    }
-    
     func parser(parser: NSXMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, var attributes attributeDict: [String : String]) {
-
+        
         if coredataBackupFile != nil {
             if elementName == "Record" {
                 quantitySamplesCount += 1
-                if !self.processOnlyHeader {
-                    if attributeDict["type"] != "HKQuantityTypeIdentifierNikeFuel" && attributeDict["type"] != "HKQuantityTypeIdentifierAppleExerciseTime" {
-                        samples.append(attributeDict)
-                        permissionsList.insert(attributeDict["type"]!)
-                    }
-                } else {
-                    delegate?.parsingWasFinished(self)
-                    parser.abortParsing()
+                if attributeDict["type"] != "HKQuantityTypeIdentifierNikeFuel" && attributeDict["type"] != "HKQuantityTypeIdentifierAppleExerciseTime" {
+                    samples.append(attributeDict)
+                    permissionsList.insert(attributeDict["type"]!)
                 }
             }
         }
@@ -83,7 +69,7 @@ class XMLParser: NSObject, NSXMLParserDelegate {
                 self.exportDate = formateador.dateFromString(attributeDict["value"]!)
             }
             //TODO : Ver que pasa con la fecha en el simulador
-
+            
         }
         
         if coredataBackupFile == nil {
@@ -93,6 +79,13 @@ class XMLParser: NSObject, NSXMLParserDelegate {
             }
         }
         
+    }
+    
+    func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+        if samples.count == 25000 {
+            delegate?.saveElementsParsed(self)
+            samples.removeAll()
+        }
     }
     
     func parserDidEndDocument(parser: NSXMLParser) {
@@ -105,6 +98,12 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         delegate?.parsingWasFinished(self)
     }
     
+    // MARK: Control de Errores
+    func parser(parser: NSXMLParser, validationErrorOccurred validationError: NSError) {
+        log.error("Error de validación en xmlParser \(validationError.description)")
+        delegate?.errorParsing(self, error: validationError)
+    }
+
     func parser(parser: NSXMLParser, parseErrorOccurred parseError: NSError) {
         log.error("Error de proceso en xmlParser: \(parseError.description)")
         log.error(parseError.description)
@@ -112,11 +111,6 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         delegate?.parsingWasFinished(self)
         delegate?.errorParsing(self, error: parseError)
         
-    }
-    
-    func parser(parser: NSXMLParser, validationErrorOccurred validationError: NSError) {
-        log.error("Error de validación en xmlParser \(validationError.description)")
-        delegate?.errorParsing(self, error: validationError)
     }
     
 
