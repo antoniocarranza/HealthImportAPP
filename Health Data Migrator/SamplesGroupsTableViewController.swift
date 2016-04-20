@@ -45,7 +45,7 @@ class SamplesGroupsTableViewController: UITableViewController, NSFetchedResultsC
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
         self.appDel = (UIApplication.sharedApplication().delegate as! AppDelegate)
-        self.managedObjectContext = appDel?.managedObjectContext
+        self.managedObjectContext = appDel?.coreDataStack.context
         //self.healthStore = appDel?.healthStore
         
         self.checkForDuplicatesButton.title = NSLocalizedString("CheckForDuplicates", comment: "Check For samples that will duplicate values on healthkit")
@@ -119,8 +119,8 @@ class SamplesGroupsTableViewController: UITableViewController, NSFetchedResultsC
     }
 
     
-    // MARK: Core Data
-    // MARK: - Fetched results controller
+    // MARK: - Core Data
+    // MARK: Fetched results controller
     
     var fetchedResultsController: NSFetchedResultsController {
         if _fetchedResultsController != nil {

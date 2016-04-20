@@ -29,6 +29,9 @@ class ImportSamplesViewController: UIViewController {
     var healthStore: HKHealthStore? = nil
     var fetchedResultsController: NSFetchedResultsController? = nil
     
+    var appDel: AppDelegate?
+    var managedObjectContext: NSManagedObjectContext? = nil
+    
     var samplesToImport: [AnyObject] = [] {
         didSet  {
             log.debug("SamplesToImport didSet: \(samplesToImport.count)")
@@ -57,6 +60,10 @@ class ImportSamplesViewController: UIViewController {
         if !samplesToImport.isEmpty {
             importing = true
         }
+        
+        self.appDel = (UIApplication.sharedApplication().delegate as! AppDelegate)
+        self.managedObjectContext = appDel?.coreDataStack.context
+
         self.configureView()
     }
     
@@ -87,7 +94,7 @@ class ImportSamplesViewController: UIViewController {
         closeButton.setAttributedTitle(NSAttributedString(string: NSLocalizedString("Close", comment: "Close")), forState: .Normal)
         importSamplesLabel.text = String(format: NSLocalizedString("CheckForDuplicatesInSamples", comment: "Check for duplictes in n samples"), formatNumberInDecimalStyle(quantitySamples.count) )
         
-        let context = self.fetchedResultsController!.managedObjectContext
+        let context = appDel!.coreDataStack.context
         
         let incremento: Float = (1 / Float(quantitySamples.count))
         var valor: Float = 0.0
@@ -224,7 +231,7 @@ class ImportSamplesViewController: UIViewController {
         let msg =   NSLocalizedString("CreatingSamples", comment: "CreatingSamples")
         self.importSamplesLabel.text = msg
         
-        let context = self.fetchedResultsController!.managedObjectContext
+        let context = appDel!.coreDataStack.context
         
         let incremento: Float = (1.0 / Float(samples.count))
         var valor: Float = 0.0

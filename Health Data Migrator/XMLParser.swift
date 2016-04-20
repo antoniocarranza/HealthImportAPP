@@ -10,10 +10,10 @@ import UIKit
 import CoreData
 import HealthKit
 
-// MARK: Parseador
+// MARK: Class
 class XMLParser: NSObject, NSXMLParserDelegate {
 
-    // MARK: Propiedades
+    // MARK: Properties
     var delegate: XMLParserDelegate?
     var fileName: String = ""                       // Nombre del archivo que se mostrará al usuario
     var exportDate: NSDate?                         // Fecha de exportación del XML
@@ -29,15 +29,16 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     var coredataBackupFile: BackupFile?             // Nombre del fichero de copia en coredata
     var coredataBackupFileId: NSManagedObjectID?    // Identificador del fichero de copia en coredata
     var quantitySamplesCount: Double = 0            // Contador de Samples
+    var context: NSManagedObjectContext?            // Contexto propio del XML para realizar el guardado en multiples hilos
     
-    // MARK: Formateador de fechas
+    // MARK: Date Formatter
     let formateador: NSDateFormatter = {
         var formateadorInterno = NSDateFormatter()
         formateadorInterno.dateFormat = "yyyyMMddHHmmssZ"
         return formateadorInterno
     }()
     
-    // MARK: Detección de elementos
+    // MARK: Document Parsing
     
     func startParsingWithContentsOfURL(fileURLWithPath: NSURL, fileName: String) {
         let parser = NSXMLParser(contentsOfURL: fileURLWithPath)
@@ -80,9 +81,9 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     }
     
     func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if samples.count == 25000 {
-            delegate?.saveElementsParsed(self)
-            samples.removeAll()
+        if samples.count == 10000 {
+                self.delegate?.saveElementsParsed(self)
+                self.samples.removeAll()
         }
     }
     
@@ -96,7 +97,7 @@ class XMLParser: NSObject, NSXMLParserDelegate {
         delegate?.parsingWasFinished(self)
     }
     
-    // MARK: Control de Errores
+    // MARK: Validation and Error controls
     func parser(parser: NSXMLParser, validationErrorOccurred validationError: NSError) {
         log.error("Error de validación en xmlParser \(validationError.description)")
         delegate?.errorParsing(self, error: validationError)
@@ -111,6 +112,8 @@ class XMLParser: NSObject, NSXMLParserDelegate {
     }
 }
 
+// MARK: -
+
 // TODO: Debiese tener un inicializador y constantes en fileName, fileURLWithPath, startTime.
 // TODO: isValidBackupFile debiese contamplar fecha de exportación y que haya existido un elemento llamado HealthData y que tenga registros
-
+// TODO: didStartElement tiene un parametro como var que será invalido en swift 3.0

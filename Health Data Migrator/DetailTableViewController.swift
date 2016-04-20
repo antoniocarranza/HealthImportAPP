@@ -115,7 +115,7 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
         //self.navigationItem.rightBarButtonItem = importButton
         
         self.appDel = (UIApplication.sharedApplication().delegate as! AppDelegate)
-        self.managedObjectContext = appDel?.managedObjectContext
+        self.managedObjectContext = appDel?.coreDataStack.context
         
         self.navigationController?.toolbarHidden = false
         

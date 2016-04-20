@@ -15,3 +15,11 @@ protocol XMLParserDelegate{
     func createBackupFileRegister(XMLParser: XMLParser) -> BackupFile?
     func errorParsing(xmlParser: XMLParser, error: NSError)
 }
+
+// MARK: - Extension para String
+extension String {
+    func stringByAppendingPathComponent(path: String) -> String {
+        let nsSt = self as NSString
+        return nsSt.stringByAppendingPathComponent(path)
+    }
+}

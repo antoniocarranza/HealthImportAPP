@@ -10,34 +10,30 @@ import UIKit
 import CoreData
 import HealthKit
 
-
-// MARK: - Extension
-
-extension String {
-    func stringByAppendingPathComponent(path: String) -> String {
-        let nsSt = self as NSString
-        return nsSt.stringByAppendingPathComponent(path)
-    }
-}
-
-// MARK: - Class
-
+// MARK: Class
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate, XMLParserDelegate {
-
-    // MARK: - Variables and Properties
     
-    var detailViewController: DetailTableViewController? = nil
-    var managedObjectContext: NSManagedObjectContext? = nil
-    var healthStore: HKHealthStore? = nil
+    // MARK: - Properties
     
+    // CoreData
+    var coreDataStack: CoreDataStack!
+    lazy var fetchedResultsController: NSFetchedResultsController = self.masterViewFetchedResultController
+    
+    var detailViewController: DetailTableViewController?
+    var healthStore: HKHealthStore?
+    
+    // Rutas
     let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+    var applicationDocumentsDirectory: NSURL?
     var documentsDirectory : String = ""
+    
+    // Contadores
     var documentsToParse : Int = 0
     var documentsParsed : Int = 0
     var elementsSaved : Int = 0
-    var applicationDocumentsDirectory: NSURL?
     var horaInicio: NSDate = NSDate()
     
+    // Auxiliar
     let formateador = NSDateFormatter()
     
     @IBOutlet weak var progressBar: UIProgressView!
@@ -52,22 +48,22 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailTableViewController
         }
     }
-
+    
     override func viewWillAppear(animated: Bool) {
         self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
         super.viewWillAppear(animated)
-
+        
         //Asignamos función al pull to refresh y cambiamos el titulo
         self.refreshControl?.addTarget(self, action: #selector(MasterViewController.refreshDocumentsFolderFileList(_:)), forControlEvents: UIControlEvents.ValueChanged)
         self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("PullToRefresh", comment: "Pull to Refresh"))
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
         log.warning("La aplicacion ha recibido un memory warning")
     }
-
+    
     // MARK: - Documents
     
     func getDocumentsFolderFileList() -> [String] {
@@ -90,35 +86,41 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             log.debug("Documentos a tratar: \(documentsToParse)")
             return documentsFolderFileList
         } catch {
-            log.error("Error Cargando el listado de ficheros!")
+            log.error("Error Cargando el listado de ficheros: \(error)")
             return []
         }
     }
     
     func refreshDocumentsFolderFileList(sender: AnyObject) {
         
-        //log.debug("refreshDocumentsFolderFileList:")
-
         UIApplication.sharedApplication().idleTimerDisabled = true
-        log.debug("Modo reposo desactivado")
+        log.info("Modo reposo desactivado")
         
+        // Borrado del contenido actual de la base de datos
         for fetchedObject in self.fetchedResultsController.fetchedObjects! {
             let backupFile = (fetchedObject as! BackupFile)
             deleteBackupFile(backupFile)
         }
         
+        // Reestablecimiento de contadores
         documentsParsed = 0
         documentsToParse = 0
         elementsSaved = 0
         
+        // Obtención del nuevo listado de ficheros
         let fileList = getDocumentsFolderFileList()
         
         for name in fileList {
-            let xmlParser: XMLParser = XMLParser()
-            let fileURLWithPath: String = documentsDirectory.stringByAppendingPathComponent(name)
-            log.debug("Realizando el parsing a \(fileURLWithPath)")
-            xmlParser.delegate = self
-            xmlParser.startParsingWithContentsOfURL(NSURL(fileURLWithPath: fileURLWithPath), fileName: name)
+            
+            //dispatch_async(GlobalBackgroundQueue, {
+                let xmlParser: XMLParser = XMLParser()
+                let fileURLWithPath: String = self.documentsDirectory.stringByAppendingPathComponent(name)
+                log.debug("Realizando el parsing a \(fileURLWithPath)")
+                xmlParser.delegate = self
+                xmlParser.context = self.coreDataStack.context
+                xmlParser.startParsingWithContentsOfURL(NSURL(fileURLWithPath: fileURLWithPath), fileName: name)
+            //})
+            
         }
         self.refreshControl?.attributedTitle = NSAttributedString(string: NSLocalizedString("PullToRefresh", comment: "Pull to Refresh"))
         self.tableView.reloadData()
@@ -126,7 +128,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         if documentsToParse == 0 {
             self.refreshControl!.endRefreshing()
             UIApplication.sharedApplication().idleTimerDisabled = false
-            log.debug("Modo reposo activado")
+            log.info("Modo reposo activado")
         }
     }
     
@@ -139,7 +141,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         log.verbose("parsingWasFinished:")
         
         documentsParsed += 1
-
+        
         let context = self.fetchedResultsController.managedObjectContext
         let backupFile = createBackupFileRegister(xmlParser)
         backupFile?.quantitySamplesCount = xmlParser.quantitySamplesCount
@@ -164,7 +166,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             
             let horaFin : NSDate = NSDate()
             let diferencia  = horaFin.timeIntervalSinceDate(horaInicio)
-
+            
             log.debug("Carga finalizada: \(horaFin)")
             log.debug("Tiempo empleado: \(diferencia)")
             
@@ -187,12 +189,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
     
     func createBackupFileRegister(xmlParser: XMLParser) -> BackupFile? {
-
+        
         log.verbose("createBackupFileRegister:")
         
         let context = self.fetchedResultsController.managedObjectContext
         let entity = self.fetchedResultsController.fetchRequest.entity!
-
+        
         if xmlParser.coredataBackupFileId != nil {
             log.debug("El fichero existe ya existe")
             return (context.objectWithID(xmlParser.coredataBackupFileId!) as! BackupFile)
@@ -227,19 +229,22 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     func saveElementsParsed(xmlParser: XMLParser) {
         
         //Cuando el Parser a leido algunos registros avisa a la vista para guardar los datos en sqlite y liberar memoria
-                
-        let context = self.fetchedResultsController.managedObjectContext
+        
+        let context = xmlParser.context!
         context.undoManager?.disableUndoRegistration()
-
+        
+        
         elementsSaved += xmlParser.samples.count
         
         if xmlParser.coredataBackupFileId != nil {
             xmlParser.coredataBackupFile =  (context.objectWithID(xmlParser.coredataBackupFileId!) as! BackupFile)
         }
-
+        
         let formateador = NSDateFormatter()
         formateador.dateFormat = "yyyyMMddHHmmssZ"
-
+        
+        let backupFile = self.createBackupFileRegister(xmlParser)!
+        log.debug("Total de elementos pre-procesados \(self.elementsSaved)")
         //context.performBlock {
             
             autoreleasepool {
@@ -274,14 +279,15 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                         if sample["recordCount"] != nil {
                             newSample.recordCount = NSString(string: sample["recordCount"]!).doubleValue
                         }
-                        newSample.backupFile = xmlParser.coredataBackupFile!
+                        newSample.backupFile = backupFile
                         newSample.typeIdentifier = sampleType!
                     } else {
                         //log.debug("CoreData - SampleType not implemented \(sampleType!)")
                     }
                 }
             }
-
+            xmlParser.coredataBackupFile?.quantitySamplesCount =  xmlParser.quantitySamplesCount
+            
             do {
                 try context.save()
                 log.debug("Total de elementos procesados \(self.elementsSaved)")
@@ -289,13 +295,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             } catch {
                 log.error("Algo fallo en context.save() de saveElementsParsed(): \(error)")
             }
-            context.reset()
+            //context.reset() //Comentado por MT
         //}
     }
     
     func deleteBackupFile(backupFile: BackupFile) {
         
-        let context = self.managedObjectContext!
+        let context = coreDataStack.context
         
         if #available(iOS 9.0, *) {
             log.debug("Borrando el fichero \"\(backupFile.fileName)\" usando iOS 9 NSBatchDeleteRequest.")
@@ -343,9 +349,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
     
     func deleteData(entity: String, backupFile: BackupFile) {
-        let context = self.managedObjectContext!
+        let context = coreDataStack.context
         let objectsToDeleteRequest = NSFetchRequest(entityName: entity)
-
+        
         if entity == "QuantitySample" {
             let predicateByFileName = NSPredicate(format: "backupFile = %@", backupFile)
             objectsToDeleteRequest.predicate = predicateByFileName
@@ -353,7 +359,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             let predicateByFileName = NSPredicate(format: "fileName = %@", backupFile)
             objectsToDeleteRequest.predicate = predicateByFileName
         }
-
+        
         objectsToDeleteRequest.includesPropertyValues = false
         objectsToDeleteRequest.includesSubentities = false
         objectsToDeleteRequest.fetchBatchSize = 25000
@@ -391,8 +397,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
     
+    // MARK: - Petición de permisos
+    
     // Actualizacción de permisos
-
+    
     func pedirPermisos(backupFile: BackupFile) {
         
         if HKHealthStore.isHealthDataAvailable() {
@@ -421,7 +429,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
     
     // MARK: - Table View
-
+    
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         //return self.fetchedResultsController.sections?.count ?? 0
         if (self.fetchedResultsController.fetchedObjects?.count != 0) {
@@ -439,12 +447,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
         return (self.fetchedResultsController.sections?.count)!
     }
-
+    
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionInfo = self.fetchedResultsController.sections![section]
         return sectionInfo.numberOfObjects
     }
-
+    
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         return 80
     }
@@ -454,12 +462,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         self.configureCell(cell, atIndexPath: indexPath)
         return cell
     }
-
+    
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
         return true
     }
-
+    
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         if editingStyle == .Delete {
             let context = self.fetchedResultsController.managedObjectContext
@@ -468,7 +476,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             documentsDirectory = paths[0] as String
             let filePath = documentsDirectory.stringByAppendingPathComponent(backupFile.fileName)
             let fileManager: NSFileManager = NSFileManager.defaultManager()
-
+            
             do {
                 try fileManager.removeItemAtPath(filePath)
                 let backupFile = self.fetchedResultsController.objectAtIndexPath(indexPath) as! BackupFile
@@ -476,7 +484,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             } catch let error as NSError {
                 log.debug(error.description)
             }
-                
+            
             do {
                 try context.save()
                 //Todo: Borrar el fichero del disco
@@ -488,9 +496,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             }
         }
     }
-
+    
     func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
-
+        
         formateador.dateStyle = .LongStyle
         formateador.timeStyle = .ShortStyle
         
@@ -510,20 +518,18 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         cell.textLabel!.text = fileName
         cell.detailTextLabel!.text = "\(samplesCount) \(samples)\r\(exportedOn) \(exportDate)"
     }
-
+    
     // MARK: - Fetched results controller
-
-    var fetchedResultsController: NSFetchedResultsController {
+    
+    var masterViewFetchedResultController: NSFetchedResultsController {
         if _fetchedResultsController != nil {
             return _fetchedResultsController!
         }
         
         let fetchRequest = NSFetchRequest()
         // Edit the entity name as appropriate.
-        let entity = NSEntityDescription.entityForName("BackupFile", inManagedObjectContext: self.managedObjectContext!)
+        let entity = NSEntityDescription.entityForName("BackupFile", inManagedObjectContext: coreDataStack.context)
         fetchRequest.entity = entity
-        //fetchRequest.includesPropertyValues = false
-        //fetchRequest.includesSubentities = false
         
         // Set the batch size to a suitable number.
         fetchRequest.fetchBatchSize = 20
@@ -533,60 +539,55 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        // Edit the section name key path and cache name if appropriate.
-        // nil for section name key path means "no sections".
-//        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath: nil, cacheName: "Master")
-        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath: nil, cacheName: nil)
+        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: coreDataStack.context, sectionNameKeyPath: nil, cacheName: nil)
         aFetchedResultsController.delegate = self
         _fetchedResultsController = aFetchedResultsController
         
         do {
             try _fetchedResultsController!.performFetch()
-        } catch {
-             // Replace this implementation with code to handle the error appropriately.
-             // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
-             //log.error("Unresolved error \(error), \(error.userInfo)")
-             abort()
+        } catch let error as NSError {
+            log.error("Error: \(error.localizedDescription)")
+            abort()
         }
         
         return _fetchedResultsController!
     }
     
     var _fetchedResultsController: NSFetchedResultsController? = nil
-
+    
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
         self.tableView.beginUpdates()
     }
-
-//    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
-//        switch type {
-//            case .Insert:
-//                self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-//            case .Delete:
-//                self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-//            default:
-//                return
-//        }
-//    }
-
+    
+    //    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
+    //        switch type {
+    //            case .Insert:
+    //                self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
+    //            case .Delete:
+    //                self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
+    //            default:
+    //                return
+    //        }
+    //    }
+    
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         switch type {
-            case .Insert:
-                tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Automatic)
-            case .Delete:
-                tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Automatic)
-            case .Update:
-                self.configureCell(tableView.cellForRowAtIndexPath(indexPath!)!, atIndexPath: indexPath!)
-            case .Move:
-                tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .None)
-                tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .None)
+        case .Insert:
+            tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Automatic)
+        case .Delete:
+            tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Automatic)
+        case .Update:
+            self.configureCell(tableView.cellForRowAtIndexPath(indexPath!)!, atIndexPath: indexPath!)
+        case .Move:
+            tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .None)
+            tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .None)
         }
     }
-
+    
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
         self.tableView.endUpdates()
     }
-
+    
     func notifyUser(msg: String, err: String?) {
         let alert = UIAlertController(title: msg,
                                       message: err,
@@ -604,14 +605,14 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         log.error(err.debugDescription)
     }
     
-     // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
-     
-//     func controllerDidChangeContent(controller: NSFetchedResultsController) {
-//         // In the simplest, most efficient, case, reload the table view.
-//         self.tableView.reloadData()
-//     }
+    // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
     
-
+    //     func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    //         // In the simplest, most efficient, case, reload the table view.
+    //         self.tableView.reloadData()
+    //     }
+    
+    
     
     
 }
