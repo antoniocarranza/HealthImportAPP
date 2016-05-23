@@ -12,7 +12,6 @@ import HealthKit
 
 
 class ImportSamplesViewController: UIViewController {
-
     
     @IBOutlet weak var messageForUserLabel: UILabel!
     @IBOutlet weak var importSamplesLabel: UILabel!
@@ -121,6 +120,7 @@ class ImportSamplesViewController: UIViewController {
                         let explicitTimeInterval = NSPredicate(format: "%K = %@ AND %K = %@",
                             HKPredicateKeyPathStartDate, sample.startDate,
                             HKPredicateKeyPathEndDate, sample.endDate)
+                        
                         let unit = HKUnit(fromString: sample.quantityType)
                         let value: Double = sample.quantity
                         
@@ -266,6 +266,12 @@ class ImportSamplesViewController: UIViewController {
                         let value = sample.quantity
                         let quantity = HKQuantity(unit: unit, doubleValue: value)
                         let metadata  = [HKMetadataKeyWasUserEntered:true]
+                        
+                        if sample.startDate.timeIntervalSinceDate(sample.endDate) > 0 {
+                            sample.endDate = sample.endDate.dateByAddingTimeInterval(NSTimeInterval(86400))
+                        }
+
+                        
                         let hkSample = HKQuantitySample(type: type, quantity: quantity, startDate: sample.startDate, endDate: sample.endDate, metadata: metadata)
                         
                         if sample.foundInHealthKit == false {

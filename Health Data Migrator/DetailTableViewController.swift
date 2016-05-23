@@ -12,8 +12,7 @@ import HealthKit
 
 
 class DetailTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
-    
-    
+
     @IBOutlet weak var checkForDuplicatesButton: UIBarButtonItem!
     @IBOutlet weak var importSamplesButton: UIBarButtonItem!
     
@@ -35,7 +34,6 @@ class DetailTableViewController: UITableViewController, NSFetchedResultsControll
             self.configureView()
         }
     }
-    
     
     // MARK: Core Data    
     // MARK: - Fetched results controller

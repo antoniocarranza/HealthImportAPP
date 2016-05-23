@@ -559,17 +559,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         self.tableView.beginUpdates()
     }
     
-    //    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
-    //        switch type {
-    //            case .Insert:
-    //                self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-    //            case .Delete:
-    //                self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-    //            default:
-    //                return
-    //        }
-    //    }
-    
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         switch type {
         case .Insert:
@@ -604,7 +593,17 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         log.debug(msg)
         log.error(err.debugDescription)
     }
-    
+
+    //    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
+    //        switch type {
+    //            case .Insert:
+    //                self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
+    //            case .Delete:
+    //                self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
+    //            default:
+    //                return
+    //        }
+    //    }
     // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
     
     //     func controllerDidChangeContent(controller: NSFetchedResultsController) {
