@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="9057" systemVersion="15B42" minimumToolsVersion="Automatic">
+    <entity name="BackupFile" representedClassName=".BackupFile">
+        <attribute name="exportDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="fileName" optional="YES" attributeType="String">
+            <userInfo/>
+        </attribute>
+        <attribute name="fileURLWithPath" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lastImportDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <relationship name="quantitySamples" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="QuantitySample" inverseName="backupFile" inverseEntity="QuantitySample" syncable="YES"/>
+        <userInfo/>
+    </entity>
+    <entity name="QuantitySample" representedClassName=".QuantitySample" syncable="YES">
+        <attribute name="endDate" attributeType="Date" syncable="YES"/>
+        <attribute name="foundInHealthKit" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="quantity" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="quantityType" attributeType="String" syncable="YES"/>
+        <attribute name="source" attributeType="String" syncable="YES"/>
+        <attribute name="startDate" attributeType="Date" syncable="YES"/>
+        <attribute name="typeIdentifier" attributeType="String" syncable="YES"/>
+        <relationship name="backupFile" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="BackupFile" inverseName="quantitySamples" inverseEntity="BackupFile" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="BackupFile" positionX="333" positionY="-163" width="128" height="118"/>
+        <element name="QuantitySample" positionX="603" positionY="-178" width="128" height="165"/>
+    </elements>
+</model>

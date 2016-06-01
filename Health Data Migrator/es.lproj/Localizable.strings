@@ -1,0 +1,144 @@
+/* 
+  Localizable.strings
+  Health Data Migrator
+
+  Created by Antonio Carranza López on 12/10/15.
+  Copyright © 2015 Antonio Carranza López. All rights reserved.
+*/
+
+// Words
+"Samples" = "Muestras";
+"SamplesFrom" = "Muestras del";
+"SampleOf" = "Muestra de";
+"SamplesOf" = "Muestras de";
+"ExportedOn" = "Exportados el";
+"StoringNow" = "Almacenando en la base de datos de Salud\rpor favor espere...";
+"CreatingSamples" = "Generando las muestras";
+"ImportError" = "Algo fallo durante el proceso de importación. ";
+"All" = "Todos";
+"Waiting" = "Esperando";
+"UnknownNumberOf" = "Numero desconocido de";
+"PleaseContactSupport" = "Su fichero XML no es valido. Por favor, cantacte con el soporte en @healthimportapp o healthimport@icloud.com con el texto del siguiente mensage para resolver el problema\r\r%@";
+
+"PullToRefresh" = "Arrastra para actualizar";
+"PullToRefreshIfNoDataItunes" = "Arrastra para actualizar, si los ficheros de copia son grandes este proceso puede llevar un tiempo. Si no aparecen ficheros de copia de seguridad, debes transferirlos a la app mediante la aplicación iTunes";
+"Refreshing" = "Actualizando";
+"ImportSuccessful" = "Importación correcta";
+"SamplesImported" = "muestras importadas";
+"NothingToImport" = "Nada que Importar";
+"AllSamplesAllreadyExist" = "Todas las muestras existen ya";
+"ReadingFile" = "Leyendo %@";
+"LongProccess" = "Este proceso puede tomar tiempo.\rA veces parecera pararse ya que el sistema\rprocesa las consultas en segundo plano.\rNo te muevas a otra aplicación o bloquees el\rtelefono o el proceso se pausará";
+
+"CheckForDuplicates" = "Buscar Duplicados";
+"CheckForDuplicatesInSamples" = "Buscando duplicados de %@ muestras";
+"CheckForDuplicatesFinished" = "La Búsqueda de duplicados finalizo.\r%@ muestras ya existentes se\rhan marcado como ya importadas";
+"ImportSamples" = "Importar Muestras";
+"ImportAllSamples" = "Importar todos";
+"ImportThisSamples" = "Importarlos";
+"AlertCheckForDuplicates" = "Si no realiza previamente una búsqueda de duplicados puede volver a importar muestras que ya hayan sido previamente importadas y por lo tanto duplicar datos";
+"Continue" = "Continuar";
+"Cancel" = "Cancelar";
+"Close" = "Cerrar";
+
+// Body Measurements
+"HKQuantityTypeIdentifierBodyMassIndex" = "Indice de masa corporal";
+"HKQuantityTypeIdentifierBodyFatPercentage" = "Porcentaje de grasa corporal";
+"HKQuantityTypeIdentifierHeight" = "Altura";
+"HKQuantityTypeIdentifierBodyMass" = "Peso";
+"HKQuantityTypeIdentifierLeanBodyMass" = "Masa corporal sin grasa";
+
+//Fitness Identifiers
+"HKQuantityTypeIdentifierStepCount" = "Pasos";
+"HKQuantityTypeIdentifierDistanceWalkingRunning" = "Distancia andando/corriendo";
+"HKQuantityTypeIdentifierDistanceCycling" = "Distancia en bicicleta";
+"HKQuantityTypeIdentifierBasalEnergyBurned" = "Energía en reposo";
+"HKQuantityTypeIdentifierActiveEnergyBurned" = "Energía en actividad";
+"HKQuantityTypeIdentifierFlightsClimbed" = "Pisos subidos";
+"HKQuantityTypeIdentifierNikeFuel" = "Nike Fuel";
+
+//Vital Signs Identifiers
+"HKQuantityTypeIdentifierHeartRate" = "Frecuencia cardiaca";
+"HKQuantityTypeIdentifierBodyTemperature" = "Frecuencia respiratoria";
+"HKQuantityTypeIdentifierBasalBodyTemperature" = "Temperatura corporal";
+"HKQuantityTypeIdentifierBloodPressureSystolic" = "Tensión arterial (Systolic)";
+"HKQuantityTypeIdentifierBloodPressureDiastolic" = "Tensión arterial  (Diastolic)";
+"HKQuantityTypeIdentifierRespiratoryRate" = "Frecuencia respiratoria";
+
+//Results Identifiers
+"HKQuantityTypeIdentifierOxygenSaturation" = "Saturación de oxigeno";
+"HKQuantityTypeIdentifierPeripheralPerfusionIndex" = "Indice de percusión periférica";
+"HKQuantityTypeIdentifierBloodGlucose" = "Glucosa en sangre";
+"HKQuantityTypeIdentifierNumberOfTimesFallen" = "Número de caídas";
+"HKQuantityTypeIdentifierElectrodermalActivity" = "Actividad electrodérmica";
+"HKQuantityTypeIdentifierInhalerUsage" = "Uso de inhaladores";
+"HKQuantityTypeIdentifierBloodAlcoholContent" = "Nivel de alcohol en sangre";
+"HKQuantityTypeIdentifierForcedVitalCapacity" = "Capacidad vital forzada";
+"HKQuantityTypeIdentifierForcedExpiratoryVolume1" = "Volumen expiatorio forzado, 1 s";
+"HKQuantityTypeIdentifierPeakExpiratoryFlowRate" = "Flujo espiratorio máximo";
+
+//Nutrition Identifiers
+"HKQuantityTypeIdentifierDietaryBiotin" = "Biotina";
+"HKQuantityTypeIdentifierDietaryCaffeine" = "Cafeína";
+"HKQuantityTypeIdentifierDietaryCalcium" = "Calcio";
+"HKQuantityTypeIdentifierDietaryCarbohydrates" = "Carbohidratos";
+"HKQuantityTypeIdentifierDietaryChloride" = "Dietary Chloride";
+"HKQuantityTypeIdentifierDietaryCholesterol" = "Colesterol";
+"HKQuantityTypeIdentifierDietaryChromium" = "Cromo";
+"HKQuantityTypeIdentifierDietaryCopper" = "Cobre";
+"HKQuantityTypeIdentifierDietaryEnergyConsumed" = "Dietary Energy Consumed";
+"HKQuantityTypeIdentifierDietaryFatMonounsaturated" = "Grasas monoinsaturadas";
+"HKQuantityTypeIdentifierDietaryFatPolyunsaturated" = "Grasas poliinsaturadas";
+"HKQuantityTypeIdentifierDietaryFatSaturated" = "Grasas saturadas";
+"HKQuantityTypeIdentifierDietaryFatTotal" = "Grasas totales";
+"HKQuantityTypeIdentifierDietaryFiber" = "Fibra";
+"HKQuantityTypeIdentifierDietaryFolate" = "Folato";
+"HKQuantityTypeIdentifierDietaryIodine" = "Yodo";
+"HKQuantityTypeIdentifierDietaryIron" = "Hierro";
+"HKQuantityTypeIdentifierDietaryMagnesium" = "Magnesio";
+"HKQuantityTypeIdentifierDietaryManganese" = "Manganesio";
+"HKQuantityTypeIdentifierDietaryMolybdenum" = "Molibdeno";
+"HKQuantityTypeIdentifierDietaryNiacin" = "Niacina";
+"HKQuantityTypeIdentifierDietaryPantothenicAcid" = "Acido pantoténico";
+"HKQuantityTypeIdentifierDietaryPhosphorus" = "Fósforo";
+"HKQuantityTypeIdentifierDietaryPotassium" = "Potasio";
+"HKQuantityTypeIdentifierDietaryProtein" = "Proteinas";
+"HKQuantityTypeIdentifierDietaryRiboflavin" = "Riboflavina";
+"HKQuantityTypeIdentifierDietarySelenium" = "Selenio";
+"HKQuantityTypeIdentifierDietarySodium" = "Sodio";
+"HKQuantityTypeIdentifierDietarySugar" = "Azucar";
+"HKQuantityTypeIdentifierDietaryThiamin" = "Tiamina";
+"HKQuantityTypeIdentifierDietaryVitaminA" = "Vitamina A";
+"HKQuantityTypeIdentifierDietaryVitaminB12" = "Vitamina B12";
+"HKQuantityTypeIdentifierDietaryVitaminB6" = "Vitamina B6";
+"HKQuantityTypeIdentifierDietaryVitaminC" = "Vitamina C";
+"HKQuantityTypeIdentifierDietaryVitaminD" = "Vitamina D";
+"HKQuantityTypeIdentifierDietaryVitaminE" = "Vitamina E";
+"HKQuantityTypeIdentifierDietaryVitaminK" = "Vitamina K";
+"HKQuantityTypeIdentifierDietaryWater" = "Agua";
+"HKQuantityTypeIdentifierDietaryZinc" = "Zinc";
+
+//UV Exposure Identifier
+"HKQuantityTypeIdentifierUVExposure" = "Indice UV";
+
+//Category Type Identifiers
+"HKCategoryTypeIdentifierSleepAnalysis" = "Análisis del sueño";
+"HKCategoryTypeIdentifierAppleStandHour" = "Apple Stand Hour";
+"HKCategoryTypeIdentifierCervicalMucusQuality" = "Calidad del moco cervical";
+"HKCategoryTypeIdentifierOvulationTestResult" = "Prueba de ovulación";
+"HKCategoryTypeIdentifierMenstrualFlow" = "Menstruación";
+"HKCategoryTypeIdentifierIntermenstrualBleeding" = "Manchado";
+"HKCategoryTypeIdentifierSexualActivity" = "Actividad sexual";
+
+//Characteristics Identifiers
+"HKCharacteristicTypeIdentifierBiologicalSex" = "Sexo";
+"HKCharacteristicTypeIdentifierBloodType" = "Grupo sanguineo";
+"HKCharacteristicTypeIdentifierDateOfBirth" = "Fecha de nacimiento";
+"HKCharacteristicTypeIdentifierFitzpatrickSkinType" = "Fototipo";
+
+//Correlation Identifiers
+"HKCorrelationTypeIdentifierBloodPressure" = "Presión Arterial";
+"HKCorrelationTypeIdentifierFood" = "Food";
+
+//Workout Identifier
+"HKWorkoutTypeIdentifier" = "Workout";
