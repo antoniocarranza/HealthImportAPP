@@ -195,6 +195,7 @@
 					A940042E1BBEA34100055881 = {
 						CreatedOnToolsVersion = 7.0;
 						DevelopmentTeam = 7U7W2NHN82;
+						LastSwiftMigration = 0810;
 						SystemCapabilities = {
 							com.apple.HealthKit = {
 								enabled = 1;
@@ -397,6 +398,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "es.365d.Health-Import";
 				PRODUCT_NAME = "Health Import";
 				PROVISIONING_PROFILE = "";
+				SWIFT_VERSION = 2.3;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -416,6 +418,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "es.365d.Health-Import";
 				PRODUCT_NAME = "Health Import";
 				PROVISIONING_PROFILE = "";
+				SWIFT_VERSION = 2.3;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
